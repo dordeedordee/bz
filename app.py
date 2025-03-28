@@ -226,6 +226,68 @@ def get_bazi(year: int, month: int, day: int, hour: int):
     return bazi
 
 
+def calculate_da_yun_info(birth_datetime: datetime, gender: str, ri_gan: str):
+    """
+    計算八字大運的起運時間與方向與完整大運表
+    """
+    yang_gan = {'甲', '丙', '戊', '巧', '壬'}
+    is_yang = ri_gan in yang_gan
+
+    if (gender == '男' and is_yang) or (gender == '女' and not is_yang):
+        direction = '順行'
+        step = 1
+    else:
+        direction = '逆行'
+        step = -1
+
+    # 取得起始日物件
+    day = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
+
+    # 開始尋找最近的節氣
+    while True:
+        day = day.after(step)
+        if day.hasJieQi():
+            jieqi_index = day.getJieQi()
+            jd = day.getJieQiJD()
+            t = sxtwl.JD2DD(jd)
+
+            # 將 sxtwl.Time 格式手動轉換為 datetime（避免 float 問題）
+            jieqi_datetime = datetime(t.Y, t.M, t.D, int(t.h), int(t.m), int(round(t.s)))
+
+            days_diff = (jieqi_datetime - birth_datetime).total_seconds() / 86400
+            qi_yun_age = abs(days_diff) / 3
+
+            # 開始年份
+            start_year = birth_datetime.year + int(qi_yun_age)
+
+            # 十天干與十二地支表
+            tiangan = ['甲','乙','丙','丁','戊','己','巧','辛','壬','癸']
+            dizhi = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥']
+
+            # 找出月干支作為起點
+            month_gz = day.getMonthGZ()
+            tg_index = month_gz.tg
+            dz_index = month_gz.dz
+
+            # 大運表生成
+            da_yun_schedule = []
+            for i in range(10):
+                offset = (i + 1) * step  # 第一柱從下一個干支開始
+                tg = tiangan[(tg_index + offset) % 10]
+                dz = dizhi[(dz_index + offset) % 12]
+                age = int(qi_yun_age) + i * 10 + 1  # 虛歲起運
+                year = start_year + i * 10
+                da_yun_schedule.append(f"{age}歲 ({year}) - {tg}{dz}")
+
+            return {
+                '大運方向': direction,
+                '節氣時間': jieqi_datetime,
+                '距離出生天數': round(days_diff, 2),
+                '起運年齡（歲）': round(qi_yun_age, 1),
+                '大運': da_yun_schedule
+            }
+
+
 def count_tian_yi_gui_ren(bazi):
     day_gan = bazi["日柱"][0]  # 日干
     year_gan = bazi["年柱"][0]  # 年干
@@ -592,7 +654,7 @@ birth_year = st.number_input("年份", min_value=1900, max_value=2100, value=196
 birth_month = st.number_input("月份", min_value=1, max_value=12, value=3)
 birth_day = st.number_input("日期", min_value=1, max_value=31, value=1)
 birth_hour = st.number_input("時辰（24小時制）", min_value=0, max_value=23, value=10)
-
+gender = st.selectbox("請選擇性別：", ["男", "女"])
 
 
 if st.button("分析八字"):
@@ -629,6 +691,19 @@ if st.button("分析八字"):
             for label in labels
         ]) + "</div>", unsafe_allow_html=True)
 
+        
+        if 'bazi' in locals():
+            birth_str = bazi['公曆'].replace("年", "-").replace("月", "-").replace("日", "")
+            birth_datetime = datetime.strptime(birth_str.split()[0] + " " + birth_str.split()[1], "%Y-%m-%d %H:%M")
+            ri_gan = bazi['日柱'][0]  # 自動擷取日干
+
+            result = calculate_da_yun_info(birth_datetime, gender, ri_gan)
+
+            st.markdown("---")
+            st.markdown("### 大運十柱")
+            for line in result['大運']:
+                st.markdown(f"- {line}")        
+        
         def show_section(title, count, matches, color=None):
             if color:
                 st.markdown(f"<h3 style='color:{color}'>{title} 數量: {count}</h3>", unsafe_allow_html=True)
