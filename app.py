@@ -585,12 +585,27 @@ if st.button("分析八字"):
         # Horizontal layout
         cols = st.columns(4)
         labels = ["年柱", "月柱", "日柱", "時柱"]
+        day_gan = bazi["日柱"][0]  # Used to compute Ten Gods
 
+        # Top row: 十神 for 天干
         for i, label in enumerate(labels):
-            gan, zhi = bazi[label]
+            tg = bazi[label][0]
+            ten_god = shishen_table[day_gan][tg]
             with cols[i]:
-                st.markdown(f"**{label}**")
-                st.markdown(f"{gan}<br>{zhi}", unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align:center'>{ten_god}</div>", unsafe_allow_html=True)
+
+        # Middle row: 天干 + 地支
+        for i, label in enumerate(labels):
+            tg, dz = bazi[label]
+            with cols[i]:
+                st.markdown(f"<div style='text-align:center'><b>{tg}</b><br>{dz}</div>", unsafe_allow_html=True)
+
+        # Bottom row: 十神 for 地支
+        for i, label in enumerate(labels):
+            dz = bazi[label][1]
+            dz_ten_god = dizhi_shishen_table[day_gan][dz]
+            with cols[i]:
+                st.markdown(f"<div style='text-align:center'>{dz_ten_god}</div>", unsafe_allow_html=True)
 
         def show_section(title, count, matches):
             st.markdown(f"### {title} 數量: {count}")
