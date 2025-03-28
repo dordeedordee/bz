@@ -629,35 +629,42 @@ if st.button("分析八字"):
             for label in labels
         ]) + "</div>", unsafe_allow_html=True)
 
+        # 🌈 Define the helper function to display results with optional color
         def show_section(title, count, matches, color=None):
-            style_prefix = f"<span style='color:{color}'>" if color else ""
-            style_suffix = "</span>" if color else ""
-
-            st.markdown(f"{style_prefix}### {title} 數量: {count}{style_suffix}", unsafe_allow_html=True)
+            if color:
+                st.markdown(f"### <span style='color:{color}'>{title} 數量: {count}</span>", unsafe_allow_html=True)
+            else:
+                st.markdown(f"### {title} 數量: {count}")
 
             if matches:
                 for m in matches:
-                    st.markdown(f"{style_prefix}- {m}{style_suffix}", unsafe_allow_html=True)
+                    if color:
+                        st.markdown(f"<span style='color:{color}'>- {m}</span>", unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"- {m}")
             else:
-                st.markdown(f"{style_prefix}無對應{style_suffix}", unsafe_allow_html=True)
+                if color:
+                    st.markdown(f"<span style='color:{color}'>無對應</span>", unsafe_allow_html=True)
+                else:
+                    st.markdown("無對應")
 
-        # Section 1 (blue)
+        # 🔵 Section 1: 合化、通根、得祿
         show_section("天干合化", *count_tiangan_he(bazi), color="#004488")
         show_section("地支合化", *count_dizhi_hehua(bazi), color="#004488")
 
-        st.markdown("<span style='color:#004488'>### 天干通根</span>", unsafe_allow_html=True)
+        st.markdown("### <span style='color:#004488'>天干通根</span>", unsafe_allow_html=True)
         for tg, matches in check_tonggen(bazi).items():
             st.markdown(f"<span style='color:#004488'>- {tg} 通根於: {', '.join(matches)}</span>", unsafe_allow_html=True)
 
-        st.markdown("<span style='color:#004488'>### 天干得祿</span>", unsafe_allow_html=True)
+        st.markdown("### <span style='color:#004488'>天干得祿</span>", unsafe_allow_html=True)
         for tg, result in check_de_lu(bazi).items():
             st.markdown(f"<span style='color:#004488'>- {tg} {result}</span>", unsafe_allow_html=True)
 
-        # Section 2 (green)
+        # 🟢 Section 2: 三合局、三會局
         show_section("三合局", *count_sanhe(bazi), color="#336600")
         show_section("三會局", *count_sanhui(bazi), color="#336600")
 
-        # Section 3 (orange)
+        # 🟠 Section 3: 貴人
         for title, func in [
             ("天乙貴人", count_tian_yi_gui_ren),
             ("太極貴人", count_taiji_gui_ren),
@@ -668,7 +675,7 @@ if st.button("分析八字"):
         ]:
             show_section(title, *func(bazi), color="#cc5500")
 
-        # Section 4 (plum)
+        # 💗 Section 4: 沖、刑、害、破
         for title, func in [
             ("沖關係", count_chong_relationships),
             ("刑關係", count_xing_relationships),
@@ -677,7 +684,7 @@ if st.button("分析八字"):
         ]:
             show_section(title, *func(bazi), color="#990066")
 
-        # Section 5 (gray)
+        # ⚪ Section 5: 桃花
         for title, func in [
             ("紅鸞桃花", count_hongluan_taohua),
             ("天喜桃花", count_tianxi_taohua),
@@ -686,6 +693,6 @@ if st.button("分析八字"):
             ("沐浴桃花", count_muyu_taohua),
         ]:
             show_section(title, *func(bazi), color="#444444")
-
+    
     except Exception as e:
         st.error(f"發生錯誤：{e}")
