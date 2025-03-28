@@ -589,8 +589,8 @@ if st.button("分析八字"):
         for i, label in enumerate(labels):
             gan, zhi = bazi[label]
             with cols[i]:
-            st.markdown(f"**{label}**")
-            st.markdown(f"{gan}<br>{zhi}", unsafe_allow_html=True)
+                st.markdown(f"**{label}**")
+                st.markdown(f"{gan}<br>{zhi}", unsafe_allow_html=True)
 
         def show_section(title, count, matches):
             st.markdown(f"### {title} 數量: {count}")
