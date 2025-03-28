@@ -584,16 +584,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# CSS for color sections (put this near top of your app)
-st.markdown("""
-<style>
-.section-1 { color: #004488; }  /* Deep blue */
-.section-2 { color: #336600; }  /* Forest green */
-.section-3 { color: #cc5500; }  /* Burnt orange */
-.section-4 { color: #990066; }  /* Plum pink */
-.section-5 { color: #444444; }  /* Soft gray */
-</style>
-""", unsafe_allow_html=True)
 
 st.markdown("請輸入您的出生時間：")
 
@@ -639,35 +629,35 @@ if st.button("分析八字"):
             for label in labels
         ]) + "</div>", unsafe_allow_html=True)
 
-        def show_section(title, count, matches, css_class=None):
-            if css_class:
-                st.markdown(f"<div class='{css_class}'>", unsafe_allow_html=True)
+        def show_section(title, count, matches, color=None):
+            style_prefix = f"<span style='color:{color}'>" if color else ""
+            style_suffix = "</span>" if color else ""
 
-            st.markdown(f"### {title} 數量: {count}")
+            st.markdown(f"{style_prefix}### {title} 數量: {count}{style_suffix}", unsafe_allow_html=True)
+
             if matches:
                 for m in matches:
-                    st.markdown(f"- {m}")
+                    st.markdown(f"{style_prefix}- {m}{style_suffix}", unsafe_allow_html=True)
             else:
-                st.markdown("無對應")
+                st.markdown(f"{style_prefix}無對應{style_suffix}", unsafe_allow_html=True)
 
-        # Section 1
-        show_section("天干合化", *count_tiangan_he(bazi), css_class="section-1")
-        show_section("地支合化", *count_dizhi_hehua(bazi), css_class="section-1")
+        # Section 1 (blue)
+        show_section("天干合化", *count_tiangan_he(bazi), color="#004488")
+        show_section("地支合化", *count_dizhi_hehua(bazi), color="#004488")
 
-        st.markdown("<div class='section-1'>", unsafe_allow_html=True)
-        st.markdown("### 天干通根")
+        st.markdown("<span style='color:#004488'>### 天干通根</span>", unsafe_allow_html=True)
         for tg, matches in check_tonggen(bazi).items():
-            st.markdown(f"- {tg} 通根於: {', '.join(matches)}")
-        st.markdown("### 天干得祿")
+            st.markdown(f"<span style='color:#004488'>- {tg} 通根於: {', '.join(matches)}</span>", unsafe_allow_html=True)
+
+        st.markdown("<span style='color:#004488'>### 天干得祿</span>", unsafe_allow_html=True)
         for tg, result in check_de_lu(bazi).items():
-            st.markdown(f"- {tg} {result}")
-        st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown(f"<span style='color:#004488'>- {tg} {result}</span>", unsafe_allow_html=True)
 
-        # Section 2
-        show_section("三合局", *count_sanhe(bazi), css_class="section-2")
-        show_section("三會局", *count_sanhui(bazi), css_class="section-2")
+        # Section 2 (green)
+        show_section("三合局", *count_sanhe(bazi), color="#336600")
+        show_section("三會局", *count_sanhui(bazi), color="#336600")
 
-        # Section 3
+        # Section 3 (orange)
         for title, func in [
             ("天乙貴人", count_tian_yi_gui_ren),
             ("太極貴人", count_taiji_gui_ren),
@@ -676,18 +666,18 @@ if st.button("分析八字"):
             ("月德貴人", count_yuede_gui_ren),
             ("天德貴人", count_tiande_gui_ren),
         ]:
-            show_section(title, *func(bazi), css_class="section-3")
+            show_section(title, *func(bazi), color="#cc5500")
 
-        # Section 4
+        # Section 4 (plum)
         for title, func in [
             ("沖關係", count_chong_relationships),
             ("刑關係", count_xing_relationships),
             ("害關係", count_hai_relationships),
             ("破關係", count_po_relationships),
         ]:
-            show_section(title, *func(bazi), css_class="section-4")
+            show_section(title, *func(bazi), color="#990066")
 
-        # Section 5
+        # Section 5 (gray)
         for title, func in [
             ("紅鸞桃花", count_hongluan_taohua),
             ("天喜桃花", count_tianxi_taohua),
@@ -695,7 +685,7 @@ if st.button("分析八字"):
             ("紅艷桃花", count_hongyan_taohua),
             ("沐浴桃花", count_muyu_taohua),
         ]:
-            show_section(title, *func(bazi), css_class="section-5")
+            show_section(title, *func(bazi), color="#444444")
 
     except Exception as e:
         st.error(f"發生錯誤：{e}")
