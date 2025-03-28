@@ -563,7 +563,7 @@ def check_de_lu(bazi):
 
 
 # --- Streamlit Interface ---
-st.title("八字命盤分析器（BaZi Analyzer）")
+st.title("八字命盤分析器")
 
 st.markdown("請輸入您的出生時間：")
 
@@ -579,7 +579,18 @@ if st.button("分析八字"):
     try:
         bazi = get_bazi(birth_year, birth_month, birth_day, birth_hour)
         st.subheader("命盤結果")
-        st.write(bazi)
+        st.markdown(f"**公曆出生時間：** {bazi['公曆']}")
+        st.markdown("### 八字命盤")
+
+        # Horizontal layout
+        cols = st.columns(4)
+        labels = ["年柱", "月柱", "日柱", "時柱"]
+
+        for i, label in enumerate(labels):
+            gan, zhi = bazi[label]
+            with cols[i]:
+            st.markdown(f"**{label}**")
+            st.markdown(f"{gan}<br>{zhi}", unsafe_allow_html=True)
 
         def show_section(title, count, matches):
             st.markdown(f"### {title} 數量: {count}")
