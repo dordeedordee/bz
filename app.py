@@ -660,7 +660,6 @@ gender = st.selectbox("請選擇性別：", ["男", "女"])
 if st.button("分析八字"):
     try:
         bazi = get_bazi(birth_year, birth_month, birth_day, birth_hour)
-        #st.subheader("命盤結果")
         st.markdown("### 八字命盤")
         st.markdown(f"**公曆出生時間：** {bazi['公曆']}")
 
@@ -692,17 +691,13 @@ if st.button("分析八字"):
         ]) + "</div>", unsafe_allow_html=True)
 
         
-        if 'bazi' in locals():
-            birth_str = bazi['公曆'].replace("年", "-").replace("月", "-").replace("日", "")
-            birth_datetime = datetime.strptime(birth_str.split()[0] + " " + birth_str.split()[1], "%Y-%m-%d %H:%M")
-            ri_gan = bazi['日柱'][0]  # 自動擷取日干
-
-            result = calculate_da_yun_info(birth_datetime, gender, ri_gan)
-
-            st.markdown("---")
-            st.markdown("### 大運十柱")
-            for line in result['大運']:
-                st.markdown(f"- {line}")        
+        birth_datetime = datetime.strptime(birth_str.split()[0] + " " + birth_str.split()[1], "%Y-%m-%d %H:%M")
+        ri_gan = bazi['日柱'][0]
+        da_yun_list = calculate_da_yun_info(birth_datetime, gender, ri_gan)
+        st.markdown("---")
+        st.markdown("### 大運十柱")
+        for line in da_yun_list:
+            st.markdown(f"- {line}")
         
         def show_section(title, count, matches, color=None):
             if color:
