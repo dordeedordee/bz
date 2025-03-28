@@ -584,32 +584,33 @@ if st.button("分析八字"):
 
         # Horizontal layout
         cols = st.columns(4)
-        labels = ["年柱", "月柱", "日柱", "時柱"]
+        labels = ["時柱", "日柱", "月柱", "年柱"]
         day_gan = bazi["日柱"][0]  # Used to compute Ten Gods
 
-        # Top row: 十神 for 天干
+        # Row 1: Label row
+        for i, label in enumerate(labels):
+            with cols[i]:
+                st.markdown(f"<div style='text-align:center; font-weight:bold; font-size:16px'>{label[0]}</div>", unsafe_allow_html=True)
+
+        # Row 2: 天干十神 (based on 日干)
         for i, label in enumerate(labels):
             tg = bazi[label][0]
             ten_god = shishen_table[day_gan][tg]
             with cols[i]:
-                st.markdown(f"<div style='text-align:center'>{ten_god}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align:center; font-size:18px; color:gray'>{ten_god}</div>", unsafe_allow_html=True)
 
-        # Middle row: 天干 + 地支
+        # Row 3: 干支
         for i, label in enumerate(labels):
             tg, dz = bazi[label]
             with cols[i]:
-                st.markdown(f"""
-                    <div style='text-align:center; font-size: 32px; font-weight: bold; line-height: 1.2;'>
-                        {tg}<br>{dz}
-                    </div>
-                """, unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align:center; font-size:32px; font-weight:bold'>{tg}<br>{dz}</div>", unsafe_allow_html=True)
 
-        # Bottom row: 十神 for 地支
+        # Row 4: 地支十神
         for i, label in enumerate(labels):
             dz = bazi[label][1]
             dz_ten_god = dizhi_shishen_table[day_gan][dz]
             with cols[i]:
-                st.markdown(f"<div style='text-align:center'>{dz_ten_god}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align:center; font-size:18px; color:gray'>{dz_ten_god}</div>", unsafe_allow_html=True)
 
         def show_section(title, count, matches):
             st.markdown(f"### {title} 數量: {count}")
