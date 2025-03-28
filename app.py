@@ -597,7 +597,7 @@ birth_hour = st.number_input("時辰（24小時制）", min_value=0, max_value=2
 if st.button("分析八字"):
     try:
         bazi = get_bazi(birth_year, birth_month, birth_day, birth_hour)
-        st.subheader("命盤結果")
+        #st.subheader("命盤結果")
         st.markdown("### 八字命盤")
         st.markdown(f"**公曆出生時間：** {bazi['公曆']}")
 
