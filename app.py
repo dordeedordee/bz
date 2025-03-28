@@ -238,7 +238,8 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, ri_gan: str):
         if day.hasJieQi():
             jd = day.getJieQiJD()
             t = sxtwl.JD2DD(jd)
-            jieqi_datetime = datetime(t.Y, t.M, t.D, int(t.h), int(t.m), int(round(t.s)))
+            second = min(int(round(t.s)), 59)
+            jieqi_datetime = datetime(t.Y, t.M, t.D, int(t.h), int(t.m), second)
             days_diff = (jieqi_datetime - birth_datetime).total_seconds() / 86400
             qi_yun_age = abs(days_diff) / 3
             start_year = birth_datetime.year + int(qi_yun_age)
