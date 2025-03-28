@@ -598,7 +598,11 @@ if st.button("分析八字"):
         for i, label in enumerate(labels):
             tg, dz = bazi[label]
             with cols[i]:
-                st.markdown(f"<div style='text-align:center'><b>{tg}</b><br>{dz}</div>", unsafe_allow_html=True)
+                st.markdown(f"""
+                    <div style='text-align:center; font-size: 32px; font-weight: bold; line-height: 1.2;'>
+                        {tg}<br>{dz}
+                    </div>
+                """, unsafe_allow_html=True)
 
         # Bottom row: 十神 for 地支
         for i, label in enumerate(labels):
