@@ -629,10 +629,9 @@ if st.button("分析八字"):
             for label in labels
         ]) + "</div>", unsafe_allow_html=True)
 
-        # 🌈 Define the helper function to display results with optional color
         def show_section(title, count, matches, color=None):
             if color:
-                st.markdown(f"### <span style='color:{color}'>{title} 數量: {count}</span>", unsafe_allow_html=True)
+                st.markdown(f"<h3 style='color:{color}'>{title} 數量: {count}</h3>", unsafe_allow_html=True)
             else:
                 st.markdown(f"### {title} 數量: {count}")
 
