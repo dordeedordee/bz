@@ -573,13 +573,7 @@ birth_month = st.number_input("月份", min_value=1, max_value=12, value=3)
 birth_day = st.number_input("日期", min_value=1, max_value=31, value=1)
 birth_hour = st.number_input("時辰（24小時制）", min_value=0, max_value=23, value=10)
 
-if st.button("分析八字"):
-    try:
-        bazi = get_bazi(int(birth_year), int(birth_month), int(birth_day), int(birth_hour))
 
-        # You can show all the results with st.write, st.markdown, or st.text
-        st.subheader("基本命盤")
-        st.write(bazi)
 
 if st.button("分析八字"):
     try:
