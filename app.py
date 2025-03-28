@@ -673,7 +673,7 @@ if st.button("分析八字"):
         birth_str = bazi['公曆'].replace("年", "-").replace("月", "-").replace("日", "")
         birth_datetime = datetime.strptime(birth_str.split()[0] + " " + birth_str.split()[1], "%Y-%m-%d %H:%M")
         ri_gan = bazi['日柱'][0]
-        da_yun_list = calculate_da_yun_info(birth_datetime, gender, ri_gan)
+        da_yun_info = calculate_da_yun_info(birth_datetime, gender, ri_gan)
         st.markdown("---")
         st.markdown("### 大運十柱")
 
