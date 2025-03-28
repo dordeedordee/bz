@@ -675,12 +675,7 @@ if st.button("分析八字"):
         ri_gan = bazi['日柱'][0]
         da_yun_info = calculate_da_yun_info(birth_datetime, gender, ri_gan)
         st.markdown("---")
-        st.markdown("### 大運十柱")
-
-        st.markdown(f"**大運方向：** {da_yun_info['大運方向']}")
-        st.markdown(f"**節氣時間：** {da_yun_info['節氣時間']}")
-        st.markdown(f"**距離出生天數：** {da_yun_info['距離出生天數']} 天")
-        st.markdown(f"**起運年齡（歲）：** {da_yun_info['起運年齡（歲）']}")
+        st.markdown("### 大運: ")
 
         for line in da_yun_info['大運']:
             st.markdown(f"- {line}")
