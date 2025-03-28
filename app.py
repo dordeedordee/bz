@@ -639,7 +639,10 @@ if st.button("分析八字"):
             for label in labels
         ]) + "</div>", unsafe_allow_html=True)
 
-        def show_section(title, count, matches):
+        def show_section(title, count, matches, css_class=None):
+            if css_class:
+                st.markdown(f"<div class='{css_class}'>", unsafe_allow_html=True)
+
             st.markdown(f"### {title} 數量: {count}")
             if matches:
                 for m in matches:
@@ -647,10 +650,11 @@ if st.button("分析八字"):
             else:
                 st.markdown("無對應")
 
-        # 🔵 Section 1: 合化 + 通根 + 得祿
+        # Section 1
+        show_section("天干合化", *count_tiangan_he(bazi), css_class="section-1")
+        show_section("地支合化", *count_dizhi_hehua(bazi), css_class="section-1")
+
         st.markdown("<div class='section-1'>", unsafe_allow_html=True)
-        show_section("天干合化", *count_tiangan_he(bazi))
-        show_section("地支合化", *count_dizhi_hehua(bazi))
         st.markdown("### 天干通根")
         for tg, matches in check_tonggen(bazi).items():
             st.markdown(f"- {tg} 通根於: {', '.join(matches)}")
@@ -659,38 +663,39 @@ if st.button("分析八字"):
             st.markdown(f"- {tg} {result}")
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # 🟩 Section 2: 三合三會
-        st.markdown("<div class='section-2'>", unsafe_allow_html=True)
-        show_section("三合局", *count_sanhe(bazi))
-        show_section("三會局", *count_sanhui(bazi))
-        st.markdown("</div>", unsafe_allow_html=True)
+        # Section 2
+        show_section("三合局", *count_sanhe(bazi), css_class="section-2")
+        show_section("三會局", *count_sanhui(bazi), css_class="section-2")
 
-        # 🟧 Section 3: 貴人
-        st.markdown("<div class='section-3'>", unsafe_allow_html=True)
-        show_section("天乙貴人", *count_tian_yi_gui_ren(bazi))
-        show_section("太極貴人", *count_taiji_gui_ren(bazi))
-        show_section("文昌貴人", *count_wenchang_gui_ren(bazi))
-        show_section("福星貴人", *count_fuxing_gui_ren(bazi))
-        show_section("月德貴人", *count_yuede_gui_ren(bazi))
-        show_section("天德貴人", *count_tiande_gui_ren(bazi))
-        st.markdown("</div>", unsafe_allow_html=True)
+        # Section 3
+        for title, func in [
+            ("天乙貴人", count_tian_yi_gui_ren),
+            ("太極貴人", count_taiji_gui_ren),
+            ("文昌貴人", count_wenchang_gui_ren),
+            ("福星貴人", count_fuxing_gui_ren),
+            ("月德貴人", count_yuede_gui_ren),
+            ("天德貴人", count_tiande_gui_ren),
+        ]:
+            show_section(title, *func(bazi), css_class="section-3")
 
-        # 💗 Section 4: 沖刑害破
-        st.markdown("<div class='section-4'>", unsafe_allow_html=True)
-        show_section("沖關係", *count_chong_relationships(bazi))
-        show_section("刑關係", *count_xing_relationships(bazi))
-        show_section("害關係", *count_hai_relationships(bazi))
-        show_section("破關係", *count_po_relationships(bazi))
-        st.markdown("</div>", unsafe_allow_html=True)
+        # Section 4
+        for title, func in [
+            ("沖關係", count_chong_relationships),
+            ("刑關係", count_xing_relationships),
+            ("害關係", count_hai_relationships),
+            ("破關係", count_po_relationships),
+        ]:
+            show_section(title, *func(bazi), css_class="section-4")
 
-        # ⚪ Section 5: 桃花
-        st.markdown("<div class='section-5'>", unsafe_allow_html=True)
-        show_section("紅鸞桃花", *count_hongluan_taohua(bazi))
-        show_section("天喜桃花", *count_tianxi_taohua(bazi))
-        show_section("咸池桃花", *count_xianchi_taohua(bazi))
-        show_section("紅艷桃花", *count_hongyan_taohua(bazi))
-        show_section("沐浴桃花", *count_muyu_taohua(bazi))
-        st.markdown("</div>", unsafe_allow_html=True)
+        # Section 5
+        for title, func in [
+            ("紅鸞桃花", count_hongluan_taohua),
+            ("天喜桃花", count_tianxi_taohua),
+            ("咸池桃花", count_xianchi_taohua),
+            ("紅艷桃花", count_hongyan_taohua),
+            ("沐浴桃花", count_muyu_taohua),
+        ]:
+            show_section(title, *func(bazi), css_class="section-5")
 
     except Exception as e:
         st.error(f"發生錯誤：{e}")
