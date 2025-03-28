@@ -598,31 +598,31 @@ if st.button("分析八字"):
     try:
         bazi = get_bazi(birth_year, birth_month, birth_day, birth_hour)
         st.subheader("命盤結果")
-        st.markdown("### 八字命盤（含十神）")
+        st.markdown("### 八字命盤")
         st.markdown(f"**公曆出生時間：** {bazi['公曆']}")
 
         labels = ["時柱", "日柱", "月柱", "年柱"]
         day_gan = bazi["日柱"][0]
 
-        # 🏷 Row 1: Label row
+        # Row 1: Label row
         st.markdown("<div class='bazi-row'>" + "".join([
             f"<div class='bazi-cell' style='font-weight:bold; font-size:16px'>{label[0]}</div>"
             for label in labels
         ]) + "</div>", unsafe_allow_html=True)
 
-        # 🔝 Row 2: Ten Gods (天干十神)
+        # Row 2: Ten Gods (天干十神)
         st.markdown("<div class='bazi-row'>" + "".join([
-            f"<div class='bazi-cell' style='font-size:18px; color:gray'>{shishen_table[day_gan][bazi[label][0]]}</div>"
+            f"<div class='bazi-cell' style='font-size:18px; color:gray'>{'元' if label == '日柱' else shishen_table[day_gan][bazi[label][0]]}</div>"
             for label in labels
         ]) + "</div>", unsafe_allow_html=True)
 
-        # 🔲 Row 3: 干支 characters
+        # Row 3: 干支 characters
         st.markdown("<div class='bazi-row'>" + "".join([
             f"<div class='bazi-cell' style='font-size:32px; font-weight:bold'>{bazi[label][0]}<br>{bazi[label][1]}</div>"
             for label in labels
         ]) + "</div>", unsafe_allow_html=True)
 
-        # 🔻 Row 4: 地支十神
+        # Row 4: 地支十神
         st.markdown("<div class='bazi-row'>" + "".join([
             f"<div class='bazi-cell' style='font-size:18px; color:gray'>{dizhi_shishen_table[day_gan][bazi[label][1]]}</div>"
             for label in labels
