@@ -227,61 +227,41 @@ def get_bazi(year: int, month: int, day: int, hour: int):
 
 
 def calculate_da_yun_info(birth_datetime: datetime, gender: str, ri_gan: str):
-    """
-    計算八字大運的起運時間與方向與完整大運表
-    """
-    yang_gan = {'甲', '丙', '戊', '巧', '壬'}
+    yang_gan = {'甲', '丙', '戊', '庚', '壬'}
     is_yang = ri_gan in yang_gan
+    step = 1 if (gender == '男' and is_yang) or (gender == '女' and not is_yang) else -1
 
-    if (gender == '男' and is_yang) or (gender == '女' and not is_yang):
-        direction = '順行'
-        step = 1
-    else:
-        direction = '逆行'
-        step = -1
-
-    # 取得起始日物件
     day = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
 
-    # 開始尋找最近的節氣
     while True:
         day = day.after(step)
         if day.hasJieQi():
-            jieqi_index = day.getJieQi()
             jd = day.getJieQiJD()
             t = sxtwl.JD2DD(jd)
-
-            # 將 sxtwl.Time 格式手動轉換為 datetime（避免 float 問題）
             jieqi_datetime = datetime(t.Y, t.M, t.D, int(t.h), int(t.m), int(round(t.s)))
-
             days_diff = (jieqi_datetime - birth_datetime).total_seconds() / 86400
             qi_yun_age = abs(days_diff) / 3
-
-            # 開始年份
             start_year = birth_datetime.year + int(qi_yun_age)
 
-            # 十天干與十二地支表
-            tiangan = ['甲','乙','丙','丁','戊','己','巧','辛','壬','癸']
-            dizhi = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥']
+            tiangan = tian_gan
+            dizhi = di_zhi
 
-            # 找出月干支作為起點
             month_gz = day.getMonthGZ()
             tg_index = month_gz.tg
             dz_index = month_gz.dz
 
-            # 大運表生成
             da_yun_schedule = []
             for i in range(10):
-                offset = (i + 1) * step  # 第一柱從下一個干支開始
+                offset = (i + 1) * step
                 tg = tiangan[(tg_index + offset) % 10]
                 dz = dizhi[(dz_index + offset) % 12]
-                age = int(qi_yun_age) + i * 10 + 1  # 虛歲起運
+                age = int(qi_yun_age) + i * 10 + 1
                 year = start_year + i * 10
                 da_yun_schedule.append(f"{age}歲 ({year}) - {tg}{dz}")
 
             return {
-                '大運方向': direction,
-                '節氣時間': jieqi_datetime,
+                '大運方向': '順行' if step == 1 else '逆行',
+                '節氣時間': jieqi_datetime.strftime("%Y-%m-%d %H:%M:%S"),
                 '距離出生天數': round(days_diff, 2),
                 '起運年齡（歲）': round(qi_yun_age, 1),
                 '大運': da_yun_schedule
@@ -696,7 +676,13 @@ if st.button("分析八字"):
         da_yun_list = calculate_da_yun_info(birth_datetime, gender, ri_gan)
         st.markdown("---")
         st.markdown("### 大運十柱")
-        for line in da_yun_list:
+
+        st.markdown(f"**大運方向：** {da_yun_info['大運方向']}")
+        st.markdown(f"**節氣時間：** {da_yun_info['節氣時間']}")
+        st.markdown(f"**距離出生天數：** {da_yun_info['距離出生天數']} 天")
+        st.markdown(f"**起運年齡（歲）：** {da_yun_info['起運年齡（歲）']}")
+
+        for line in da_yun_info['大運']:
             st.markdown(f"- {line}")
         
         def show_section(title, count, matches, color=None):
