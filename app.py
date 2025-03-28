@@ -584,6 +584,22 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# CSS for color sections (put this near top of your app)
+st.markdown("""
+<style>
+.section-box {
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+.section-1 { background-color: #f0f8ff; }   /* Light blue */
+.section-2 { background-color: #f5fff0; }   /* Light green */
+.section-3 { background-color: #fff8f0; }   /* Light orange */
+.section-4 { background-color: #fff0f5; }   /* Light pink */
+.section-5 { background-color: #f9f9f9; }   /* Light gray */
+</style>
+""", unsafe_allow_html=True)
+
 st.markdown("請輸入您的出生時間：")
 
 # 👇 User inputs
@@ -628,43 +644,96 @@ if st.button("分析八字"):
             for label in labels
         ]) + "</div>", unsafe_allow_html=True)
 
-        def show_section(title, count, matches):
-            st.markdown(f"### {title} 數量: {count}")
-            if matches:
+        with st.container():
+            st.markdown("<div class='section-box section-1'>", unsafe_allow_html=True)
+
+            tiangan_he_count, tiangan_he_matches = count_tiangan_he(bazi)
+            st.write(f"天干合數量: {tiangan_he_count}")
+            for match in tiangan_he_matches:
+                st.write(f"・{match}")
+
+            dizhi_he_count, dizhi_he_combinations = count_dizhi_hehua(bazi)
+            st.write(f"地支合化數量: {dizhi_he_count}")
+            for match in dizhi_he_combinations:
+                st.write(f"・{match}")
+
+            tonggen_results = check_tonggen(bazi)
+            st.write("天干通根結果:")
+            for tg, matches in tonggen_results.items():
+                st.write(f"・{tg} 通根於: {', '.join(matches)}")
+
+            de_lu_results = check_de_lu(bazi)
+            st.write("天干得祿結果:")
+            for tg_label, result in de_lu_results.items():
+                st.write(f"・{tg_label} {result}")
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with st.container():
+            st.markdown("<div class='section-box section-2'>", unsafe_allow_html=True)
+
+            sanhe_count, sanhe_matches = count_sanhe(bazi)
+            st.write(f"三合局數量: {sanhe_count}")
+            for match in sanhe_matches:
+                st.write(f"・{match}")
+
+            sanhui_count, sanhui_matches = count_sanhui(bazi)
+            st.write(f"三會數量: {sanhui_count}")
+            for match in sanhui_matches:
+                st.write(f"・{match}")
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with st.container():
+            st.markdown("<div class='section-box section-3'>", unsafe_allow_html=True)
+
+            for name, func in [
+                ("天乙貴人", count_tian_yi_gui_ren),
+                ("太極貴人", count_taiji_gui_ren),
+                ("文昌貴人", count_wenchang_gui_ren),
+                ("福星貴人", count_fuxing_gui_ren),
+                ("月德貴人", count_yuede_gui_ren),
+                ("天德貴人", count_tiande_gui_ren),
+            ]:
+                count, matches = func(bazi)
+                st.write(f"{name} 數量: {count}")
                 for m in matches:
-                    st.markdown(f"- {m}")
-            else:
-                st.markdown("無對應")
+                    st.write(f"・{m}")
 
-        # 一系列貴人與關係分析
-        show_section("天干合", *count_tiangan_he(bazi))
-        show_section("地支合化", *count_dizhi_hehua(bazi))
+            st.markdown("</div>", unsafe_allow_html=True)
 
-        st.markdown("### 天干通根")
-        for tg, matches in check_tonggen(bazi).items():
-            st.markdown(f"- {tg} 通根於: {', '.join(matches)}")
+        with st.container():
+            st.markdown("<div class='section-box section-4'>", unsafe_allow_html=True)
 
-        st.markdown("### 天干得祿")
-        for tg, result in check_de_lu(bazi).items():
-            st.markdown(f"- {tg} {result}")
+            for name, func in [
+                ("沖關係", count_chong_relationships),
+                ("刑關係", count_xing_relationships),
+                ("害關係", count_hai_relationships),
+                ("破關係", count_po_relationships),
+            ]:
+                count, matches = func(bazi)
+                st.write(f"{name} 數量: {count}")
+                for m in matches:
+                    st.write(f"・{m}")
 
-        show_section("三合局", *count_sanhe(bazi))
-        show_section("三會", *count_sanhui(bazi))
-        show_section("天乙貴人", *count_tian_yi_gui_ren(bazi))
-        show_section("太極貴人", *count_taiji_gui_ren(bazi))
-        show_section("文昌貴人", *count_wenchang_gui_ren(bazi))
-        show_section("福星貴人", *count_fuxing_gui_ren(bazi))
-        show_section("月德貴人", *count_yuede_gui_ren(bazi))
-        show_section("天德貴人", *count_tiande_gui_ren(bazi))
-        show_section("沖關係", *count_chong_relationships(bazi))
-        show_section("刑關係", *count_xing_relationships(bazi))
-        show_section("害關係", *count_hai_relationships(bazi))
-        show_section("破關係", *count_po_relationships(bazi))
-        show_section("紅鸞桃花", *count_hongluan_taohua(bazi))
-        show_section("天喜桃花", *count_tianxi_taohua(bazi))
-        show_section("咸池桃花", *count_xianchi_taohua(bazi))
-        show_section("紅艷桃花", *count_hongyan_taohua(bazi))
-        show_section("沐浴桃花", *count_muyu_taohua(bazi))
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with st.container():
+            st.markdown("<div class='section-box section-5'>", unsafe_allow_html=True)
+
+            for name, func in [
+                ("紅鸞桃花", count_hongluan_taohua),
+                ("天喜桃花", count_tianxi_taohua),
+                ("咸池桃花", count_xianchi_taohua),
+                ("紅艷桃花", count_hongyan_taohua),
+                ("沐浴桃花", count_muyu_taohua),
+            ]:
+                count, matches = func(bazi)
+                st.write(f"{name} 數量: {count}")
+                for m in matches:
+                    st.write(f"・{m}")
+
+            st.markdown("</div>", unsafe_allow_html=True)
 
     except Exception as e:
         st.error(f"發生錯誤：{e}")
