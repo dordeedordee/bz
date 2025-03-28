@@ -565,6 +565,25 @@ def check_de_lu(bazi):
 # --- Streamlit Interface ---
 st.title("八字命盤分析器")
 
+st.markdown("""
+<style>
+/* Prevent Streamlit columns from stacking */
+.bazi-row {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-evenly;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    gap: 10px;
+    margin-bottom: 1rem;
+}
+.bazi-cell {
+    text-align: center;
+    min-width: 80px;
+}
+</style>
+""", unsafe_allow_html=True)
+
 st.markdown("請輸入您的出生時間：")
 
 # 👇 User inputs
@@ -579,38 +598,35 @@ if st.button("分析八字"):
     try:
         bazi = get_bazi(birth_year, birth_month, birth_day, birth_hour)
         st.subheader("命盤結果")
+        st.markdown("### 八字命盤（含十神）")
         st.markdown(f"**公曆出生時間：** {bazi['公曆']}")
-        st.markdown("### 八字命盤")
 
-        # Horizontal layout
-        cols = st.columns(4)
         labels = ["時柱", "日柱", "月柱", "年柱"]
-        day_gan = bazi["日柱"][0]  # Used to compute Ten Gods
+        day_gan = bazi["日柱"][0]
 
-        # Row 1: Label row
-        for i, label in enumerate(labels):
-            with cols[i]:
-                st.markdown(f"<div style='text-align:center; font-weight:bold; font-size:16px'>{label[0]}</div>", unsafe_allow_html=True)
+        # 🏷 Row 1: Label row
+        st.markdown("<div class='bazi-row'>" + "".join([
+            f"<div class='bazi-cell' style='font-weight:bold; font-size:16px'>{label[0]}</div>"
+            for label in labels
+        ]) + "</div>", unsafe_allow_html=True)
 
-        # Row 2: 天干十神 (based on 日干)
-        for i, label in enumerate(labels):
-            tg = bazi[label][0]
-            ten_god = shishen_table[day_gan][tg]
-            with cols[i]:
-                st.markdown(f"<div style='text-align:center; font-size:18px; color:gray'>{ten_god}</div>", unsafe_allow_html=True)
+        # 🔝 Row 2: Ten Gods (天干十神)
+        st.markdown("<div class='bazi-row'>" + "".join([
+            f"<div class='bazi-cell' style='font-size:18px; color:gray'>{shishen_table[day_gan][bazi[label][0]]}</div>"
+            for label in labels
+        ]) + "</div>", unsafe_allow_html=True)
 
-        # Row 3: 干支
-        for i, label in enumerate(labels):
-            tg, dz = bazi[label]
-            with cols[i]:
-                st.markdown(f"<div style='text-align:center; font-size:32px; font-weight:bold'>{tg}<br>{dz}</div>", unsafe_allow_html=True)
+        # 🔲 Row 3: 干支 characters
+        st.markdown("<div class='bazi-row'>" + "".join([
+            f"<div class='bazi-cell' style='font-size:32px; font-weight:bold'>{bazi[label][0]}<br>{bazi[label][1]}</div>"
+            for label in labels
+        ]) + "</div>", unsafe_allow_html=True)
 
-        # Row 4: 地支十神
-        for i, label in enumerate(labels):
-            dz = bazi[label][1]
-            dz_ten_god = dizhi_shishen_table[day_gan][dz]
-            with cols[i]:
-                st.markdown(f"<div style='text-align:center; font-size:18px; color:gray'>{dz_ten_god}</div>", unsafe_allow_html=True)
+        # 🔻 Row 4: 地支十神
+        st.markdown("<div class='bazi-row'>" + "".join([
+            f"<div class='bazi-cell' style='font-size:18px; color:gray'>{dizhi_shishen_table[day_gan][bazi[label][1]]}</div>"
+            for label in labels
+        ]) + "</div>", unsafe_allow_html=True)
 
         def show_section(title, count, matches):
             st.markdown(f"### {title} 數量: {count}")
