@@ -1,6 +1,23 @@
 import streamlit as st
 from datetime import datetime
 import sxtwl  # 四象推命庫
+import base64
+
+def set_background(image_file):
+    with open(image_file, "rb") as f:
+        data = f.read()
+    encoded = base64.b64encode(data).decode()
+    css = f"""
+    <style>
+    .stApp {{
+        background-image: url("data:image/jpg;base64,{encoded}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }}
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
 
 tian_gan = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
 di_zhi = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
@@ -606,6 +623,7 @@ def check_de_lu(bazi):
 
 
 # --- Streamlit Interface ---
+set_background("background.jpg")
 st.title("八字命盤分析器")
 
 st.markdown("""
