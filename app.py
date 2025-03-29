@@ -635,7 +635,7 @@ birth_year = st.number_input("年份", min_value=1900, max_value=2100, value=197
 birth_month = st.number_input("月份", min_value=1, max_value=12, value=7)
 birth_day = st.number_input("日期", min_value=1, max_value=31, value=7)
 birth_hour = st.number_input("時辰（24小時制）", min_value=0, max_value=23, value=7)
-gender = st.selectbox("請選擇性別：", ["男", "女"])
+gender = st.selectbox("性別：", ["男", "女"])
 
 
 if st.button("分析八字"):
