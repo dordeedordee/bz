@@ -4,13 +4,20 @@ import sxtwl  # 四象推命庫
 import base64
 
 def set_background(image_file):
+    import os
+    if not os.path.exists(image_file):
+        st.warning(f"找不到圖片：{image_file}")
+        return
+
+    ext = image_file.split('.')[-1]
+    mime = f"image/{'jpeg' if ext == 'jpg' else ext}"
     with open(image_file, "rb") as f:
         data = f.read()
     encoded = base64.b64encode(data).decode()
     css = f"""
     <style>
     .stApp {{
-        background-image: url("data:image/jpg;base64,{encoded}");
+        background-image: url("data:{mime};base64,{encoded}");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
