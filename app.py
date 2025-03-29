@@ -628,7 +628,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-st.markdown("請輸入您的出生時間：")
+st.markdown("請輸入出生時間：")
 
 # 👇 User inputs
 birth_year = st.number_input("年份", min_value=1900, max_value=2100, value=1977)
