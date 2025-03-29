@@ -5,6 +5,7 @@ import base64
 
 def set_background(image_file):
     import os
+    import base64
     if not os.path.exists(image_file):
         st.warning(f"找不到圖片：{image_file}")
         return
@@ -14,13 +15,22 @@ def set_background(image_file):
     with open(image_file, "rb") as f:
         data = f.read()
     encoded = base64.b64encode(data).decode()
+
     css = f"""
     <style>
-    .stApp {{
+    .stApp::before {{
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         background-image: url("data:{mime};base64,{encoded}");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
+        opacity: 0.2;  /* 調整透明度：越小越透明 */
+        z-index: -1;
     }}
     </style>
     """
