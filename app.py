@@ -770,7 +770,7 @@ if st.button("分析八字"):
             ("天喜桃花", count_tianxi_taohua),
             ("咸池桃花", count_xianchi_taohua),
             ("紅艷桃花", count_hongyan_taohua),
-            ("沐浴桃花", count_muyu_taohua),
+            #("沐浴桃花", count_muyu_taohua),
         ]:
             show_section(title, *func(bazi), color="#444444")
     
