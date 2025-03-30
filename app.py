@@ -561,22 +561,22 @@ def count_hongyan_taohua(bazi):
     
     return count, matches
 
-def count_muyu_taohua(bazi):
-    day_gan = bazi["日柱"][0]  # 日干
-    muyu_zhi = muyu_taohua.get(day_gan, "")
+#def count_muyu_taohua(bazi):
+#    day_gan = bazi["日柱"][0]  # 日干
+#    muyu_zhi = muyu_taohua.get(day_gan, "")
     
-    count = 0
-    matches = []
-    for pillar, value in bazi.items():
-        if pillar == "公曆":
-            continue
-        zhi = value[1]  # 取地支
-        pillar_label = pillar[0]  # 取「年、月、日、時」
-        if zhi == muyu_zhi:
-            count += 1
-            matches.append(f"日干 {day_gan} - {pillar_label}支 {zhi}")
+#    count = 0
+#    matches = []
+#    for pillar, value in bazi.items():
+#        if pillar == "公曆":
+#            continue
+#        zhi = value[1]  # 取地支
+#        pillar_label = pillar[0]  # 取「年、月、日、時」
+#        if zhi == muyu_zhi:
+#            count += 1
+#            matches.append(f"日干 {day_gan} - {pillar_label}支 {zhi}")
     
-    return count, matches
+#    return count, matches
 
 def check_tonggen(bazi):
     tonggen_results = {}
