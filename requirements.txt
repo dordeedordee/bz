@@ -1,3 +1,7 @@
 streamlit
 sxtwl
+swisseph
+geopy
+pytz
+math
 wheel

@@ -1,7 +1,124 @@
-import streamlit as st
+#import streamlit as st
+#from datetime import datetime
+#import sxtwl  # 四象推命庫
+#import base64
+
+
 from datetime import datetime
-import sxtwl  # 四象推命庫
+import sxtwl
+import math
+import streamlit as st
+import swisseph as swe
+import pytz
+from geopy.geocoders import Nominatim
 import base64
+
+# ========== 上升星座特徵資料庫 ==========
+ascendant_traits = {
+    "牡羊": {"家庭背景": "家庭氣氛強勢、有競爭感", "外貌氣質": "動作快、氣場強、輪廓分明", "個人特質": "衝動直接、喜歡挑戰、不怕風險"},
+    "金牛": {"家庭背景": "注重金錢或穩定、生活規律", "外貌氣質": "臉圓、氣質沉穩、動作慢", "個人特質": "享樂主義、慢熱、重感官"},
+    "雙子": {"家庭背景": "家中話多、重教育與資訊", "外貌氣質": "瘦長、靈巧、眼神機靈", "個人特質": "好奇多變、聰明、愛說話"},
+    "巨蟹": {"家庭背景": "家庭情感緊密、母親影響大", "外貌氣質": "眼神溫柔、臉圓、給人安全感", "個人特質": "顧家、敏感、有同理心"},
+    "獅子": {"家庭背景": "重視表現、父親角色強", "外貌氣質": "氣勢強、眼神有神、有明星感", "個人特質": "喜歡表現、自信、愛被注意"},
+    "處女": {"家庭背景": "紀律嚴謹、重學業、挑剔", "外貌氣質": "五官細緻、纖瘦整齊", "個人特質": "重細節、有條理、愛分析"},
+    "天秤": {"家庭背景": "家庭講求和諧、重視關係與外表", "外貌氣質": "外型端正、笑容迷人、對稱美感", "個人特質": "重公平、擅社交、喜美感"},
+    "天蠍": {"家庭背景": "家庭氣氛神秘或壓抑", "外貌氣質": "目光銳利、有神秘感、氣場強", "個人特質": "情感深沉、有控制慾、觀察入微"},
+    "射手": {"家庭背景": "家庭自由、重學習與旅行", "外貌氣質": "高挑、有活力、笑容爽朗", "個人特質": "愛自由、樂觀、愛冒險"},
+    "摩羯": {"家庭背景": "家庭傳統、責任感強、早熟", "外貌氣質": "臉部輪廓深、氣質成熟穩重", "個人特質": "務實、有野心、慢熱但堅定"},
+    "水瓶": {"家庭背景": "觀念開明或非傳統、重個人自由", "外貌氣質": "氣質獨特、穿著前衛或中性風", "個人特質": "思想新穎、重邏輯、怪怪的但迷人"},
+    "雙魚": {"家庭背景": "家庭情感複雜或混沌", "外貌氣質": "眼神夢幻、有藝術氣息", "個人特質": "感性浪漫、愛幻想、易受影響"}
+}
+
+zodiac_signs = [
+    ("牡羊", 0), ("金牛", 30), ("雙子", 60), ("巨蟹", 90),
+    ("獅子", 120), ("處女", 150), ("天秤", 180), ("天蠍", 210),
+    ("射手", 240), ("摩羯", 270), ("水瓶", 300), ("雙魚", 330)
+]
+
+birth_hour = None  # 預設為 None
+
+
+def get_sign(degree):
+    for i in range(len(zodiac_signs)):
+        name, deg = zodiac_signs[i]
+        if degree < deg + 30:
+            return name
+    return "未知"
+
+
+def suggest_ascendant_streamlit():
+    st.subheader("🔮 依據外貌與性格推測上升星座")
+    selected = []
+    for category in ["家庭背景", "外貌氣質", "個人特質"]:
+        options = [f"{sign}: {traits[category]}" for sign, traits in ascendant_traits.items()]
+        choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options)
+        selected_sign = choice.split(":")[0]
+        selected.append(selected_sign)
+
+    score = {}
+    for trait in selected:
+        score[trait] = score.get(trait, 0) + 1
+    best_match = max(score.items(), key=lambda x: x[1])[0]
+    st.success(f"✨ 最可能的上升星座為：{best_match}")
+    return best_match
+
+
+def estimate_birth_time(sign_name, year, month, day, city):
+    geolocator = Nominatim(user_agent="asc_finder")
+    location = geolocator.geocode(city)
+    if location is None:
+        st.error("找不到城市位置，請確認拼寫是否正確。")
+        return
+
+    latitude = location.latitude
+    longitude = location.longitude
+    timezone = pytz.timezone("Asia/Taipei")
+
+    start_time = datetime(year, month, day, 0, 0, tzinfo=timezone)
+    end_time = start_time + datetime.timedelta(days=1)
+    interval = datetime.timedelta(minutes=5)
+    swe.set_topo(longitude, latitude, 0)
+
+    st.write(f"\n🎯 查詢上升星座為「{sign_name}」的出生時間段")
+    result = []
+    start_interval = None
+
+    while start_time < end_time:
+        utc_time = start_time.astimezone(pytz.utc)
+        jd = swe.julday(utc_time.year, utc_time.month, utc_time.day,
+                        utc_time.hour + utc_time.minute / 60.0)
+        asc = swe.houses(jd, latitude, longitude, b'P')[0][0]
+        current_sign = get_sign(asc)
+
+        if current_sign == sign_name:
+            if start_interval is None:
+                start_interval = start_time
+        else:
+            if start_interval is not None:
+                result.append((start_interval, start_time))
+                start_interval = None
+        start_time += interval
+
+    if start_interval is not None:
+        result.append((start_interval, end_time))
+
+    if result:
+        st.subheader("🕒 根據推測，以下是可能的出生時間段：")
+        time_options = []
+        for r in result:
+            time_range = f"{r[0].strftime('%H:%M')} - {r[1].strftime('%H:%M')}"
+            st.info(time_range)
+            hour_start = r[0].hour
+            hour_end = r[1].hour
+            for h in range(hour_start, hour_end + 1):
+                if 0 <= h <= 23:
+                    time_options.append(h)
+
+        time_options = sorted(set(time_options))
+        return time_options
+    else:
+        st.warning(f"此日此地未出現上升星座 {sign_name} 的區段，請檢查輸入或改變條件。")
+        return []
 
 def set_background(image_file):
     import os
@@ -660,12 +777,31 @@ st.markdown("""
 st.markdown("請輸入出生時間：")
 
 # 👇 User inputs
+#birth_year = st.number_input("年份", min_value=1900, max_value=2100, value=1977)
+#birth_month = st.number_input("月份", min_value=1, max_value=12, value=7)
+#birth_day = st.number_input("日期", min_value=1, max_value=31, value=7)
+#birth_hour = st.number_input("時辰（24小時制）", min_value=0, max_value=23, value=7)
+#gender = st.selectbox("性別：", ["男", "女"])
+
 birth_year = st.number_input("年份", min_value=1900, max_value=2100, value=1977)
 birth_month = st.number_input("月份", min_value=1, max_value=12, value=7)
 birth_day = st.number_input("日期", min_value=1, max_value=31, value=7)
-birth_hour = st.number_input("時辰（24小時制）", min_value=0, max_value=23, value=7)
+birth_hour_option = st.selectbox("時辰（24小時制）", [f"{i}" for i in range(24)] + ["不知道"])
 gender = st.selectbox("性別：", ["男", "女"])
 
+if birth_hour_option == "不知道":
+    city = st.text_input("請輸入出生城市（如 Taipei）")
+    if city:
+        guessed_sign = suggest_ascendant_streamlit()
+        possible_hours = estimate_birth_time(guessed_sign, birth_year, birth_month, birth_day, city)
+        if possible_hours:
+            birth_hour = st.selectbox("請從上述推估中選擇最符合的時辰：", possible_hours)
+            st.success(f"您選擇的推估時辰為：{birth_hour} 時，可進行後續八字分析")
+else:
+    birth_hour = int(birth_hour_option)
+    st.success(f"您選擇的出生時間為：{birth_hour} 時")
+    # 可接續 get_bazi(birth_year, birth_month, birth_day, birth_hour) 等分析
+    
 
 if st.button("分析八字"):
     try:
