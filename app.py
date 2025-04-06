@@ -634,7 +634,7 @@ def check_de_lu(bazi):
 
 
 # --- Streamlit Interface ---
-set_background("background1.jpg")
+set_background("background.jpg")
 st.title("八字命盤分析器")
 
 st.markdown("""
