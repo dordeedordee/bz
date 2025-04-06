@@ -1,6 +1,6 @@
 streamlit
 sxtwl
-swisseph
+skyfield
 geopy
 pytz
 wheel

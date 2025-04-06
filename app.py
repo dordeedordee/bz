@@ -8,7 +8,7 @@ from datetime import datetime
 import sxtwl
 import math
 import streamlit as st
-import swisseph as swe
+from skyfield.api import load, Topos
 import pytz
 from geopy.geocoders import Nominatim
 import base64
@@ -68,36 +68,39 @@ def estimate_birth_time(sign_name, year, month, day, city):
     location = geolocator.geocode(city)
     if location is None:
         st.error("找不到城市位置，請確認拼寫是否正確。")
-        return
+        return []
 
     latitude = location.latitude
     longitude = location.longitude
     timezone = pytz.timezone("Asia/Taipei")
 
+    ts = load.timescale()
+    eph = load('de421.bsp')
     start_time = datetime(year, month, day, 0, 0, tzinfo=timezone)
-    end_time = start_time + datetime.timedelta(days=1)
-    interval = datetime.timedelta(minutes=5)
-    swe.set_topo(longitude, latitude, 0)
+    end_time = start_time + timedelta(days=1)
+    interval = timedelta(minutes=10)
 
-    st.write(f"\n🎯 查詢上升星座為「{sign_name}」的出生時間段")
+    t = start_time
     result = []
     start_interval = None
 
-    while start_time < end_time:
-        utc_time = start_time.astimezone(pytz.utc)
-        jd = swe.julday(utc_time.year, utc_time.month, utc_time.day,
-                        utc_time.hour + utc_time.minute / 60.0)
-        asc = swe.houses(jd, latitude, longitude, b'P')[0][0]
-        current_sign = get_sign(asc)
+    while t < end_time:
+        utc_dt = t.astimezone(pytz.utc)
+        t_sky = ts.from_datetime(utc_dt)
+        observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
+        asc = observer.at(t_sky).observe(eph['sun']).apparent()
+        ra, dec, _ = asc.radec()
+        degree = (ra.hours / 24) * 360
+        current_sign = get_sign(degree)
 
         if current_sign == sign_name:
             if start_interval is None:
-                start_interval = start_time
+                start_interval = t
         else:
             if start_interval is not None:
-                result.append((start_interval, start_time))
+                result.append((start_interval, t))
                 start_interval = None
-        start_time += interval
+        t += interval
 
     if start_interval is not None:
         result.append((start_interval, end_time))
