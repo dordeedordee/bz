@@ -730,9 +730,11 @@ if birth_hour_option == "不知道":
             shuffled = [(sign, traits[category]) for sign, traits in ascendant_traits.items()]
             random.shuffle(shuffled)
             options = [trait for _, trait in shuffled]
-            options = [f"{sign}: {traits[category]}" for sign, traits in ascendant_traits.items()]
             choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
-            selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
+            selected_sign = next((sign for sign, traits in ascendant_traits.items() if traits.get(category) == choice), None)
+            if selected_sign is None:
+                st.warning("無法根據選擇的敘述對應到上升星座，請重新選擇。")
+                st.stop()
             selected.append(selected_sign)
 
         score = {}
