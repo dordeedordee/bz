@@ -723,22 +723,19 @@ birth_hour = None
 def estimate_birth_time(sign_name, year, month, day, city):
     city_file_map = {
         "Taipei": "ascendant_ranges_Taipei.csv",
-        "台北": "ascendant_ranges_Taipei.csv",
-        "Taiwan": "ascendant_ranges_Taipei.csv",
-        "Hong Kong": "ascendant_ranges_Hong_Kong.csv",
-        "香港": "ascendant_ranges_Hong_Kong.csv"
+        "Hong Kong": "ascendant_ranges_Hong_Kong.csv"
     }
 
-    file_key = city.strip().lower()
-    if file_key not in city_file_map:
-        print("目前僅支援『台北（Taipei）』與『香港（Hong Kong）』的出生地計算。")
+    if city not in city_file_map:
+        st.error("目前僅支援『Taipei』與『Hong Kong』的出生地。")
         return []
 
-    file_path = city_file_map[file_key]
+    file_path = city_file_map[city]
+
     try:
         df = pd.read_csv(file_path)
     except Exception as e:
-        print(f"無法載入資料檔案：{e}")
+        st.error(f"無法載入資料檔案：{e}")
         return []
 
     date_str = f"{year:04d}-{month:02d}-{day:02d}"
@@ -746,13 +743,19 @@ def estimate_birth_time(sign_name, year, month, day, city):
     df_sign = df_day[df_day["Sign"] == sign_name]
 
     if df_sign.empty:
-        print("找不到該日與星座對應的時間範圍。")
+        st.warning("找不到該日與星座對應的時間範圍。")
         return []
 
     return list(zip(df_sign["Start"], df_sign["End"]))
 
 if birth_hour_option == "不知道":
-    city = st.text_input("請輸入出生城市（如 Taipei 或 Hong Kong）")
+    city_map = {
+        "Taiwan（台灣）": "Taipei",
+        "Hong Kong（香港）": "Hong Kong"
+    }
+
+    city_selection = st.selectbox("請選擇出生地區：", list(city_map.keys()))
+    city = city_map[city_selection]
 
     if city:
         if "selected_signs" not in st.session_state:
@@ -819,7 +822,7 @@ if birth_hour_option == "不知道":
                 birth_hour = st.selectbox("請從上述推估中選擇最符合的時辰：", sorted(set(time_options)), key="final_hour")
             else:
                 st.warning("無法根據該城市與日期找到對應的出生時段。")
-    
+
 
 if st.button("分析八字"):
 #if analysis_ready and birth_hour is not None and st.button("分析八字"):
