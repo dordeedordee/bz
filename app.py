@@ -717,8 +717,10 @@ birth_month = st.number_input("月份", min_value=1, max_value=12, value=7)
 birth_day = st.number_input("日期", min_value=1, max_value=31, value=7)
 birth_hour_option = st.selectbox("時辰（24小時制）", [f"{i}" for i in range(24)] + ["不知道"])
 
-
-birth_hour = None
+if birth_hour_option != "不知道":
+    birth_hour = int(birth_hour_option)
+else:
+    birth_hour = None
 
 def estimate_birth_time(sign_name, year, month, day, city):
     city_file_map = {
