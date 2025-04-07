@@ -744,23 +744,33 @@ if birth_hour_option == "不知道":
         if not st.session_state["trigger_zodiac"]:
             st.subheader("依據外貌與性格推測上升星座")
             selected_signs = []
+            valid_count = 0  # 計算非「不知道」的選項數
+
             for category in ["家庭背景", "外貌氣質", "個人特質"]:
-                options = [traits[category] for traits in ascendant_traits.values()]
+                options = ["不知道"] + [traits[category] for traits in ascendant_traits.values()]
                 choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
-                selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
-                selected_signs.append(selected_sign)
+
+                if choice != "不知道":
+                    selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
+                    selected_signs.append(selected_sign)
+                    valid_count += 1
+                else:
+                    selected_signs.append(None)
 
             if st.button("🔮 推算星座"):
-                st.session_state["selected_signs"] = selected_signs
-                st.session_state["trigger_zodiac"] = True
-                for key in ["家庭背景", "外貌氣質", "個人特質"]:
-                    st.session_state.pop(key, None)
+                if valid_count == 0:
+                    st.warning("由於您三項特質皆選擇『不知道』，無法推算上升星座。")
+                else:
+                    st.session_state["selected_signs"] = selected_signs
+                    st.session_state["trigger_zodiac"] = True
+                    for key in ["家庭背景", "外貌氣質", "個人特質"]:
+                        st.session_state.pop(key, None)
 
-        # 顯示推算的星座與「下一步按鈕」
+        # 顯示推算結果與下一步按鈕
         if st.session_state["trigger_zodiac"]:
-            selected_signs = st.session_state["selected_signs"]
+            filtered_signs = [s for s in st.session_state["selected_signs"] if s is not None]
             score = {}
-            for sign in selected_signs:
+            for sign in filtered_signs:
                 score[sign] = score.get(sign, 0) + 1
             best_match = max(score.items(), key=lambda x: x[1])[0]
             st.code(f"最可能的上升星座為：{best_match}")
