@@ -9,12 +9,9 @@ import sxtwl
 import math
 import streamlit as st
 from skyfield.api import load, Topos
-from geopy.geocoders import Nominatim
-#from datetime import datetime as dt_py, timedelta
-from timezonefinder import TimezoneFinder
 import pytz
 import random
-
+from geopy.geocoders import Nominatim
 
 # ========== 上升星座特徵資料庫 ==========
 ascendant_traits = {
@@ -747,33 +744,23 @@ if birth_hour_option == "不知道":
         if not st.session_state["trigger_zodiac"]:
             st.subheader("依據外貌與性格推測上升星座")
             selected_signs = []
-            valid_count = 0  # 計算非「不知道」的選項數
-
             for category in ["家庭背景", "外貌氣質", "個人特質"]:
-                options = ["不知道"] + [traits[category] for traits in ascendant_traits.values()]
+                options = [traits[category] for traits in ascendant_traits.values()]
                 choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
-
-                if choice != "不知道":
-                    selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
-                    selected_signs.append(selected_sign)
-                    valid_count += 1
-                else:
-                    selected_signs.append(None)
+                selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
+                selected_signs.append(selected_sign)
 
             if st.button("🔮 推算星座"):
-                if valid_count == 0:
-                    st.warning("由於您三項特質皆選擇『不知道』，無法推算上升星座。")
-                else:
-                    st.session_state["selected_signs"] = selected_signs
-                    st.session_state["trigger_zodiac"] = True
-                    for key in ["家庭背景", "外貌氣質", "個人特質"]:
-                        st.session_state.pop(key, None)
+                st.session_state["selected_signs"] = selected_signs
+                st.session_state["trigger_zodiac"] = True
+                for key in ["家庭背景", "外貌氣質", "個人特質"]:
+                    st.session_state.pop(key, None)
 
-        # 顯示推算結果與下一步按鈕
+        # 顯示推算的星座與「下一步按鈕」
         if st.session_state["trigger_zodiac"]:
-            filtered_signs = [s for s in st.session_state["selected_signs"] if s is not None]
+            selected_signs = st.session_state["selected_signs"]
             score = {}
-            for sign in filtered_signs:
+            for sign in selected_signs:
                 score[sign] = score.get(sign, 0) + 1
             best_match = max(score.items(), key=lambda x: x[1])[0]
             st.code(f"最可能的上升星座為：{best_match}")
@@ -782,22 +769,9 @@ if birth_hour_option == "不知道":
                 if st.button("📍 推算可能出生時段"):
                     st.session_state["trigger_time_range"] = True
 
-        # 正確使用 Skyfield 計算 ASC 對應星座
+        # 顯示時間推估結果
         if st.session_state["trigger_time_range"]:
-
-            def get_ascendant_sign(eph, t, latitude, longitude):
-                earth = eph["earth"]
-                observer = earth + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
-                astrometric = observer.at(t).observe(eph['sun'])  # 只為了建立觀測點
-
-                gast = t.gast  # Greenwich Apparent Sidereal Time
-                lst_deg = (gast * 15 + longitude) % 360
-                asc_deg = lst_deg % 360
-
-                signs = ["白羊", "金牛", "雙子", "巨蟹", "獅子", "處女", "天秤", "天蠍", "射手", "摩羯", "水瓶", "雙魚"]
-                return signs[int(asc_deg / 30)]
-
-            def estimate_birth_time(sign_name, year, month, day, city, best_match):
+            def estimate_birth_time(sign_name, year, month, day, city):
                 geolocator = Nominatim(user_agent="asc_finder")
                 location = geolocator.geocode(city)
                 if location is None:
@@ -806,14 +780,9 @@ if birth_hour_option == "不知道":
 
                 latitude = location.latitude
                 longitude = location.longitude
-
-                tf = TimezoneFinder()
-                tz_str = tf.timezone_at(lng=longitude, lat=latitude)
-                timezone = pytz.timezone(tz_str if tz_str else 'Asia/Taipei')
-
+                timezone = pytz.timezone("Asia/Taipei")
                 ts = load.timescale()
                 eph = load('de421.bsp')
-
                 start_time = datetime(year, month, day, 0, 0, tzinfo=timezone)
                 end_time = start_time + timedelta(days=1)
                 interval = timedelta(minutes=10)
@@ -824,7 +793,14 @@ if birth_hour_option == "不知道":
                 while t < end_time:
                     utc_dt = t.astimezone(pytz.utc)
                     t_sky = ts.from_datetime(utc_dt)
-                    current_sign = get_ascendant_sign(eph, t_sky, latitude, longitude)
+                    observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
+                    astrometric = observer.at(t_sky).observe(eph['sun'])
+                    apparent = astrometric.apparent()
+                    ra, dec, distance = apparent.radec()
+                    gast = t_sky.gast
+                    lst_deg = (gast * 15 + longitude) % 360
+                    asc_deg = lst_deg % 360
+                    current_sign = get_sign(asc_deg)
 
                     if current_sign == best_match:
                         if start_interval is None:
@@ -833,7 +809,6 @@ if birth_hour_option == "不知道":
                         if start_interval is not None:
                             result.append((start_interval, t))
                             start_interval = None
-
                     t += interval
 
                 if start_interval is not None:
@@ -841,7 +816,7 @@ if birth_hour_option == "不知道":
 
                 return result
 
-            ranges = estimate_birth_time(best_match, birth_year, birth_month, birth_day, city, best_match)
+            ranges = estimate_birth_time(best_match, birth_year, birth_month, birth_day, city)
             if ranges:
                 st.subheader("根據推測，以下是可能的出生時間段：")
                 time_options = []
@@ -858,6 +833,9 @@ else:
     birth_hour = int(birth_hour_option)
     st.code(f"您選擇的出生時間為：{birth_hour} 時")
 
+
+
+    
     
 
 if st.button("分析八字"):
