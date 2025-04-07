@@ -817,7 +817,7 @@ if birth_hour_option == "不知道":
                     asc_ecliptic = asc_vector.frame_latlon(ecliptic_frame)
                     lon = asc_ecliptic[1].degrees % 360
                     current_sign = signs[int(lon // 30)]
-
+                    print(f"{t.strftime('%H:%M')} → {current_sign}")  # 加上這行看正在跑什麼
                     if current_sign == best_match:
                         if start_interval is None:
                             start_interval = t
