@@ -718,7 +718,7 @@ birth_hour_option = st.selectbox("時辰（24小時制）", [f"{i}" for i in ran
 gender = st.selectbox("性別：", ["男", "女"])
 
 
-analysis_ready = False
+birth_hour = None
 
 if birth_hour_option == "不知道":
     city = st.text_input("請輸入出生城市（如 Taipei）")
@@ -782,7 +782,13 @@ if birth_hour_option == "不知道":
 
             return result
 
+        if "estimated" not in st.session_state:
+            st.session_state["estimated"] = False
+
         if st.button("推算可能出生時段"):
+            st.session_state["estimated"] = True
+
+        if st.session_state["estimated"]:
             ranges = estimate_birth_time(best_match, birth_year, birth_month, birth_day, city)
             if ranges:
                 st.subheader("🕒 根據推測，以下是可能的出生時間段：")
@@ -797,17 +803,12 @@ if birth_hour_option == "不知道":
                 birth_hour = st.selectbox("請從上述推估中選擇最符合的時辰：", sorted(set(time_options)), key="final_hour")
                 if birth_hour is not None:
                     st.success(f"✅ 您選擇的推估時辰為：{birth_hour} 時")
-                    analysis_ready = True
-            else:
-                st.warning(f"此日此地未出現上升星座 {best_match} 的區段，請檢查輸入或改變條件。")
 else:
     birth_hour = int(birth_hour_option)
     st.success(f"您選擇的出生時間為：{birth_hour} 時")
-    analysis_ready = True
-    
 
-#if st.button("分析八字"):
-if analysis_ready and birth_hour is not None and st.button("分析八字"):
+if st.button("分析八字"):
+#if analysis_ready and birth_hour is not None and st.button("分析八字"):
     try:
         bazi = get_bazi(birth_year, birth_month, birth_day, birth_hour)
         st.markdown("### 八字命盤")
