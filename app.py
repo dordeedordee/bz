@@ -853,7 +853,16 @@ if birth_hour_option == "不知道":
         "Hong Kong（香港）": "Hong Kong"
     }
 
-    city_selection = st.selectbox("請選擇出生地區：", list(city_map.keys()), index=1)
+    if "city_selection" not in st.session_state:
+        st.session_state["city_selection"] = "Hong Kong（香港）"
+
+    city_selection = st.selectbox(
+        "請選擇出生地區：",
+        list(city_map.keys()),
+        index=list(city_map.keys()).index(st.session_state["city_selection"]),
+        key="city_selection"
+    )
+    
     city = city_map[city_selection]  
     
     if city:
