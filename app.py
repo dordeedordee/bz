@@ -720,7 +720,6 @@ birth_hour_option = st.selectbox("時辰（24小時制）", [f"{i}" for i in ran
 
 
 birth_hour = None
-
 if birth_hour_option == "不知道":
     city = st.text_input("請輸入出生城市（如 Taipei）")
 
@@ -733,10 +732,11 @@ if birth_hour_option == "不知道":
         if st.button("重設特質"):
             st.session_state["selected_signs"] = []
             st.session_state["trigger_estimate"] = False
+            for key in ["家庭背景", "外貌氣質", "個人特質"]:
+                st.session_state.pop(key, None)
 
-        # ✅ 改為使用 st.container 來控制 trait 區塊的顯示與消失
         if not st.session_state["trigger_estimate"]:
-            with st.container():
+            with st.form("trait_form", clear_on_submit=False):
                 st.subheader("依據外貌與性格推測上升星座")
                 selected_signs = []
                 for category in ["家庭背景", "外貌氣質", "個人特質"]:
@@ -745,14 +745,11 @@ if birth_hour_option == "不知道":
                     selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
                     selected_signs.append(selected_sign)
 
-                if st.button("推算可能出生時段"):
+                submitted = st.form_submit_button("✨ 推算可能出生時段")
+                if submitted:
                     st.session_state["selected_signs"] = selected_signs
-                    st.session_state["trigger_estimate"] = True  # 👈 按下按鈕後會隱藏 trait 區塊
-                    for category in ["家庭背景", "外貌氣質", "個人特質"]:
-                        if category in st.session_state:
-                            del st.session_state[category]
+                    st.session_state["trigger_estimate"] = True
 
-        # 顯示預測與時間推估
         if st.session_state["trigger_estimate"]:
             selected_signs = st.session_state["selected_signs"]
             score = {}
@@ -822,7 +819,6 @@ if birth_hour_option == "不知道":
 else:
     birth_hour = int(birth_hour_option)
     st.code(f"您選擇的出生時間為：{birth_hour} 時")
-
     
     
 
