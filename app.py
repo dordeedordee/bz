@@ -808,7 +808,7 @@ if birth_hour_option == "不知道":
 
             if st.button("重設特質"):
                 st.session_state["show_traits"] = True
-                st.experimental_rerun()
+                st.session_state.pop("selected_signs", None)
 else:
     birth_hour = int(birth_hour_option)
     st.code(f"您選擇的出生時間為：{birth_hour} 時")
