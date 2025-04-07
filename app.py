@@ -725,22 +725,20 @@ if birth_hour_option == "不知道":
     city = st.text_input("請輸入出生城市（如 Taipei）")
     if city:
         st.subheader("依據外貌與性格推測上升星座")
-        selected = []
+        selected_traits = []
+        trait_to_sign = {}
         for category in ["家庭背景", "外貌氣質", "個人特質"]:
-            shuffled = [(sign, traits[category]) for sign, traits in ascendant_traits.items()]
-            random.shuffle(shuffled)
-            options = [trait for _, trait in shuffled]
+            all_traits = [(sign, traits[category]) for sign, traits in ascendant_traits.items()]
+            random.shuffle(all_traits)
+            options = [trait for _, trait in all_traits]
             choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
-            selected_sign = next((sign for sign, traits in ascendant_traits.items() if traits.get(category) == choice), None)
-            if selected_sign is None:
-                st.warning("無法根據選擇的敘述對應到上升星座，請重新選擇。")
-                st.stop()
-            selected.append(selected_sign)
+            selected_traits.append(choice)
+            for sign, traits in ascendant_traits.items():
+                if traits.get(category) == choice:
+                    trait_to_sign.setdefault(sign, 0)
+                    trait_to_sign[sign] += 1
 
-        score = {}
-        for trait in selected:
-            score[trait] = score.get(trait, 0) + 1
-        best_match = max(score.items(), key=lambda x: x[1])[0]
+        best_match = max(trait_to_sign.items(), key=lambda x: x[1])[0]
         st.code(f"最可能的上升星座為：{best_match}")
 
         def estimate_birth_time(sign_name, year, month, day, city):
