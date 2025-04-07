@@ -722,10 +722,10 @@ birth_hour = None
 
 def estimate_birth_time(sign_name, year, month, day, city):
     city_file_map = {
-        "taipei": "ascendant_ranges_Taipei.csv",
+        "Taipei": "ascendant_ranges_Taipei.csv",
         "台北": "ascendant_ranges_Taipei.csv",
-        "taiwan": "ascendant_ranges_Taipei.csv",
-        "hong kong": "ascendant_ranges_Hong_Kong.csv",
+        "Taiwan": "ascendant_ranges_Taipei.csv",
+        "Hong Kong": "ascendant_ranges_Hong_Kong.csv",
         "香港": "ascendant_ranges_Hong_Kong.csv"
     }
 
