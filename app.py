@@ -9,9 +9,10 @@ import sxtwl
 import math
 import streamlit as st
 from skyfield.api import load, Topos
+from skyfield.api import load as skyfield_load
+from skyfield import astrology
 import pytz
 from geopy.geocoders import Nominatim
-import base64
 
 # ========== 上升星座特徵資料庫 ==========
 ascendant_traits = {
@@ -35,12 +36,11 @@ zodiac_signs = [
     ("射手", 240), ("摩羯", 270), ("水瓶", 300), ("雙魚", 330)
 ]
 
-birth_hour = None  # 預設為 None
+birth_hour = None
 
 
 def get_sign(degree):
-    for i in range(len(zodiac_signs)):
-        name, deg = zodiac_signs[i]
+    for name, deg in zodiac_signs:
         if degree < deg + 30:
             return name
     return "未知"
@@ -734,7 +734,6 @@ if birth_hour_option == "不知道":
             best_match = max(score.items(), key=lambda x: x[1])[0]
             st.success(f"✨ 最可能的上升星座為：{best_match}")
 
-            # estimate birth time function
             def estimate_birth_time(sign_name, year, month, day, city):
                 geolocator = Nominatim(user_agent="asc_finder")
                 location = geolocator.geocode(city)
@@ -745,13 +744,11 @@ if birth_hour_option == "不知道":
                 latitude = location.latitude
                 longitude = location.longitude
                 timezone = pytz.timezone("Asia/Taipei")
-
-                ts = load.timescale()
-                eph = load('de421.bsp')
+                ts = skyfield_load.timescale()
+                eph = skyfield_load('de421.bsp')
                 start_time = datetime(year, month, day, 0, 0, tzinfo=timezone)
                 end_time = start_time + timedelta(days=1)
                 interval = timedelta(minutes=10)
-
                 t = start_time
                 result = []
                 start_interval = None
@@ -759,11 +756,9 @@ if birth_hour_option == "不知道":
                 while t < end_time:
                     utc_dt = t.astimezone(pytz.utc)
                     t_sky = ts.from_datetime(utc_dt)
-                    observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
-                    asc = observer.at(t_sky).observe(eph['sun']).apparent()
-                    ra, dec, _ = asc.radec()
-                    degree = (ra.hours / 24) * 360
-                    current_sign = get_sign(degree)
+                    houses, asc_deg = astrology.houses(t_sky, latitude, longitude)
+                    asc_degree = asc_deg[0]
+                    current_sign = get_sign(asc_degree)
 
                     if current_sign == sign_name:
                         if start_interval is None:
@@ -788,7 +783,6 @@ if birth_hour_option == "不知道":
                         for h in range(hour_start, hour_end + 1):
                             if 0 <= h <= 23:
                                 time_options.append(h)
-
                     time_options = sorted(set(time_options))
                     return time_options
                 else:
