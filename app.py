@@ -725,78 +725,77 @@ if birth_hour_option == "不知道":
         selected = []
         for category in ["家庭背景", "外貌氣質", "個人特質"]:
             options = [f"{sign}: {traits[category]}" for sign, traits in ascendant_traits.items()]
-            choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options)
+            choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
             selected_sign = choice.split(":")[0]
             selected.append(selected_sign)
 
-        if st.button("推算可能出生時段"):
-            score = {}
-            for trait in selected:
-                score[trait] = score.get(trait, 0) + 1
-            best_match = max(score.items(), key=lambda x: x[1])[0]
-            st.success(f"✨ 最可能的上升星座為：{best_match}")
+        score = {}
+        for trait in selected:
+            score[trait] = score.get(trait, 0) + 1
+        best_match = max(score.items(), key=lambda x: x[1])[0]
+        st.success(f"✨ 最可能的上升星座為：{best_match}")
 
-            def estimate_birth_time(sign_name, year, month, day, city):
-                geolocator = Nominatim(user_agent="asc_finder")
-                location = geolocator.geocode(city)
-                if location is None:
-                    st.error("找不到城市位置，請確認拼寫是否正確。")
-                    return []
+        def estimate_birth_time(sign_name, year, month, day, city):
+            geolocator = Nominatim(user_agent="asc_finder")
+            location = geolocator.geocode(city)
+            if location is None:
+                st.error("找不到城市位置，請確認拼寫是否正確。")
+                return []
 
-                latitude = location.latitude
-                longitude = location.longitude
-                timezone = pytz.timezone("Asia/Taipei")
-                ts = load.timescale()
-                eph = load('de421.bsp')
-                start_time = datetime(year, month, day, 0, 0, tzinfo=timezone)
-                end_time = start_time + timedelta(days=1)
-                interval = timedelta(minutes=10)
-                t = start_time
-                result = []
-                start_interval = None
+            latitude = location.latitude
+            longitude = location.longitude
+            timezone = pytz.timezone("Asia/Taipei")
+            ts = load.timescale()
+            eph = load('de421.bsp')
+            start_time = datetime(year, month, day, 0, 0, tzinfo=timezone)
+            end_time = start_time + timedelta(days=1)
+            interval = timedelta(minutes=10)
+            t = start_time
+            result = []
+            start_interval = None
 
-                while t < end_time:
-                    utc_dt = t.astimezone(pytz.utc)
-                    t_sky = ts.from_datetime(utc_dt)
-                    observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
-                    astrometric = observer.at(t_sky).observe(eph['sun'])
-                    apparent = astrometric.apparent()
-                    ra, dec, distance = apparent.radec()
-                    gast = t_sky.gast
-                    lst_deg = (gast * 15 + longitude) % 360
-                    asc_deg = lst_deg % 360
-                    current_sign = get_sign(asc_deg)
+            while t < end_time:
+                utc_dt = t.astimezone(pytz.utc)
+                t_sky = ts.from_datetime(utc_dt)
+                observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
+                astrometric = observer.at(t_sky).observe(eph['sun'])
+                apparent = astrometric.apparent()
+                ra, dec, distance = apparent.radec()
+                gast = t_sky.gast
+                lst_deg = (gast * 15 + longitude) % 360
+                asc_deg = lst_deg % 360
+                current_sign = get_sign(asc_deg)
 
-                    if current_sign == sign_name:
-                        if start_interval is None:
-                            start_interval = t
-                    else:
-                        if start_interval is not None:
-                            result.append((start_interval, t))
-                            start_interval = None
-                    t += interval
-
-                if start_interval is not None:
-                    result.append((start_interval, end_time))
-
-                if result:
-                    st.subheader("🕒 根據推測，以下是可能的出生時間段：")
-                    time_options = []
-                    for r in result:
-                        time_range = f"{r[0].strftime('%H:%M')} - {r[1].strftime('%H:%M')}"
-                        st.info(time_range)
-                        for h in range(r[0].hour, r[1].hour + 1):
-                            if 0 <= h <= 23:
-                                time_options.append(h)
-                    return sorted(set(time_options))
+                if current_sign == sign_name:
+                    if start_interval is None:
+                        start_interval = t
                 else:
-                    st.warning(f"此日此地未出現上升星座 {sign_name} 的區段，請檢查輸入或改變條件。")
-                    return []
+                    if start_interval is not None:
+                        result.append((start_interval, t))
+                        start_interval = None
+                t += interval
 
-            possible_hours = estimate_birth_time(best_match, birth_year, birth_month, birth_day, city)
-            if possible_hours:
-                birth_hour = st.selectbox("請從上述推估中選擇最符合的時辰：", possible_hours)
+            if start_interval is not None:
+                result.append((start_interval, end_time))
+
+            return result
+
+        if st.button("推算可能出生時段"):
+            ranges = estimate_birth_time(best_match, birth_year, birth_month, birth_day, city)
+            if ranges:
+                st.subheader("🕒 根據推測，以下是可能的出生時間段：")
+                time_options = []
+                for r in ranges:
+                    time_range = f"{r[0].strftime('%H:%M')} - {r[1].strftime('%H:%M')}"
+                    st.info(time_range)
+                    for h in range(r[0].hour, r[1].hour + 1):
+                        if 0 <= h <= 23:
+                            time_options.append(h)
+
+                birth_hour = st.selectbox("請從上述推估中選擇最符合的時辰：", sorted(set(time_options)))
                 st.success(f"您選擇的推估時辰為：{birth_hour} 時，可進行後續八字分析")
+            else:
+                st.warning(f"此日此地未出現上升星座 {best_match} 的區段，請檢查輸入或改變條件。")
 else:
     birth_hour = int(birth_hour_option)
     st.success(f"您選擇的出生時間為：{birth_hour} 時")
