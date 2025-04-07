@@ -723,7 +723,7 @@ birth_hour = None
 if birth_hour_option == "不知道":
     city = st.text_input("請輸入出生城市（如 Taipei）")
     if city:
-        st.subheader("🔮 依據外貌與性格推測上升星座")
+        st.subheader("依據外貌與性格推測上升星座")
         selected = []
         for category in ["家庭背景", "外貌氣質", "個人特質"]:
             options = [f"{sign}: {traits[category]}" for sign, traits in ascendant_traits.items()]
@@ -735,7 +735,7 @@ if birth_hour_option == "不知道":
         for trait in selected:
             score[trait] = score.get(trait, 0) + 1
         best_match = max(score.items(), key=lambda x: x[1])[0]
-        st.success(f"✨ 最可能的上升星座為：{best_match}")
+        st.success(f"最可能的上升星座為：{best_match}")
 
         def estimate_birth_time(sign_name, year, month, day, city):
             geolocator = Nominatim(user_agent="asc_finder")
@@ -795,14 +795,12 @@ if birth_hour_option == "不知道":
                 time_options = []
                 for r in ranges:
                     time_range = f"{r[0].strftime('%H:%M')} - {r[1].strftime('%H:%M')}"
-                    st.info(time_range)
+                    st.code(time_range)
                     for h in range(r[0].hour, r[1].hour + 1):
                         if 0 <= h <= 23:
                             time_options.append(h)
 
                 birth_hour = st.selectbox("請從上述推估中選擇最符合的時辰：", sorted(set(time_options)), key="final_hour")
-                #if birth_hour is not None:
-                #    st.success(f"✅ 您選擇的推估時辰為：{birth_hour} 時")
 else:
     birth_hour = int(birth_hour_option)
     st.success(f"您選擇的出生時間為：{birth_hour} 時")
