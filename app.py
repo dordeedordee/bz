@@ -810,14 +810,16 @@ if birth_hour_option == "不知道":
                     utc_dt = t.astimezone(pytz.utc)
                     t_sky = ts.from_datetime(utc_dt)
                     observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
+
                     asc_vector = observer.at(t_sky).from_altaz(alt_degrees=0.0, az_degrees=90.0)
-                    if asc_vector.t is None:
+                    if asc_vector is None:
                         t += interval
                         continue
+
                     asc_ecliptic = asc_vector.frame_latlon(ecliptic_frame)
                     lon = asc_ecliptic[1].degrees % 360
                     current_sign = signs[int(lon // 30)]
-                    print(f"{t.strftime('%H:%M')} → {current_sign}")  # 加上這行看正在跑什麼
+
                     if current_sign == best_match:
                         if start_interval is None:
                             start_interval = t
@@ -848,7 +850,6 @@ if birth_hour_option == "不知道":
 else:
     birth_hour = int(birth_hour_option)
     st.code(f"您選擇的出生時間為：{birth_hour} 時")
-    
     
 
 if st.button("分析八字"):
