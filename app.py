@@ -856,11 +856,11 @@ if birth_hour_option == "不知道":
     city_selection = st.selectbox("請選擇出生地區：", list(city_map.keys()))
     city = city_map[city_selection]
 
-    if st.button("🔄 強制清除所有特質記憶"):
-        for key in list(st.session_state.keys()):
-            if key not in ["selected_signs", "trigger_zodiac", "trigger_time_range", "final_hour"]:
-                del st.session_state[key]
-        st.success("已清除過去選項，請重新載入頁面或重新選擇特質。")    
+    #if st.button("🔄 強制清除所有特質記憶"):
+    #    for key in list(st.session_state.keys()):
+    #        if key not in ["selected_signs", "trigger_zodiac", "trigger_time_range", "final_hour"]:
+    #            del st.session_state[key]
+    #    st.success("已清除過去選項，請重新載入頁面或重新選擇特質。")    
     
     if city:
         if "selected_signs" not in st.session_state:
