@@ -723,6 +723,7 @@ birth_hour = None
 
 if birth_hour_option == "不知道":
     city = st.text_input("請輸入出生城市（如 Taipei）")
+
     if city:
         if "selected_signs" not in st.session_state:
             st.session_state["selected_signs"] = []
@@ -733,12 +734,9 @@ if birth_hour_option == "不知道":
             st.session_state["selected_signs"] = []
             st.session_state["trigger_estimate"] = False
 
-        # ⬇️ 建立一個容器：可清除 trait 選單
-        trait_box = st.empty()
-
-        # ⬇️ 把選項選單放進容器裡
+        # ✅ 改為使用 st.container 來控制 trait 區塊的顯示與消失
         if not st.session_state["trigger_estimate"]:
-            with trait_box:
+            with st.container():
                 st.subheader("依據外貌與性格推測上升星座")
                 selected_signs = []
                 for category in ["家庭背景", "外貌氣質", "個人特質"]:
@@ -749,10 +747,9 @@ if birth_hour_option == "不知道":
 
                 if st.button("推算可能出生時段"):
                     st.session_state["selected_signs"] = selected_signs
-                    st.session_state["trigger_estimate"] = True
-                    trait_box.empty()  # ⬅️ 清除 trait box
+                    st.session_state["trigger_estimate"] = True  # 👈 按下按鈕後會隱藏 trait 區塊
 
-        # ⬇️ 一旦使用者按下按鈕，顯示結果與出生時間區段
+        # 顯示預測與時間推估
         if st.session_state["trigger_estimate"]:
             selected_signs = st.session_state["selected_signs"]
             score = {}
@@ -760,7 +757,6 @@ if birth_hour_option == "不知道":
                 score[sign] = score.get(sign, 0) + 1
             best_match = max(score.items(), key=lambda x: x[1])[0]
             st.code(f"最可能的上升星座為：{best_match}")
-
 
             def estimate_birth_time(sign_name, year, month, day, city):
                 geolocator = Nominatim(user_agent="asc_finder")
@@ -819,6 +815,7 @@ if birth_hour_option == "不知道":
                             time_options.append(h)
 
                 birth_hour = st.selectbox("請從上述推估中選擇最符合的時辰：", sorted(set(time_options)), key="final_hour")
+
 else:
     birth_hour = int(birth_hour_option)
     st.code(f"您選擇的出生時間為：{birth_hour} 時")
