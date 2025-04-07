@@ -701,12 +701,22 @@ st.markdown("""
 
 st.markdown("請輸入出生時間：")
 
+
+
 # 👇 User inputs
 #birth_year = st.number_input("年份", min_value=1900, max_value=2100, value=1977)
 #birth_month = st.number_input("月份", min_value=1, max_value=12, value=7)
 #birth_day = st.number_input("日期", min_value=1, max_value=31, value=7)
 #birth_hour = st.number_input("時辰（24小時制）", min_value=0, max_value=23, value=7)
 #gender = st.selectbox("性別：", ["男", "女"])
+
+
+birth_year = st.number_input("年份", min_value=1900, max_value=2100, value=1977)
+birth_month = st.number_input("月份", min_value=1, max_value=12, value=7)
+birth_day = st.number_input("日期", min_value=1, max_value=31, value=7)
+birth_hour_option = st.selectbox("時辰（24小時制）", [f"{i}" for i in range(24)] + ["不知道"])
+gender = st.selectbox("性別：", ["男", "女"])
+
 
 if birth_hour_option == "不知道":
     city = st.text_input("請輸入出生城市（如 Taipei）")
