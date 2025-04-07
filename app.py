@@ -735,7 +735,7 @@ if birth_hour_option == "不知道":
         for trait in selected:
             score[trait] = score.get(trait, 0) + 1
         best_match = max(score.items(), key=lambda x: x[1])[0]
-        st.success(f"最可能的上升星座為：{best_match}")
+        st.code(f"最可能的上升星座為：{best_match}")
 
         def estimate_birth_time(sign_name, year, month, day, city):
             geolocator = Nominatim(user_agent="asc_finder")
