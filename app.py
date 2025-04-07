@@ -727,14 +727,16 @@ if birth_hour_option == "不知道":
         st.subheader("依據外貌與性格推測上升星座")
         selected_traits = []
         trait_to_sign = {}
+        category_to_sign_map = {}
+
         for category in ["家庭背景", "外貌氣質", "個人特質"]:
-            all_traits = [(sign, traits[category]) for sign, traits in ascendant_traits.items()]
-            random.shuffle(all_traits)
-            options = [trait for _, trait in all_traits]
-            choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
+            trait_sign_pairs = [(traits[category], sign) for sign, traits in ascendant_traits.items()]
+            random.shuffle(trait_sign_pairs)
+            trait_options = [pair[0] for pair in trait_sign_pairs]
+            choice = st.selectbox(f"請選擇符合的 {category} 敘述：", trait_options, key=category)
             selected_traits.append(choice)
-            for sign, traits in ascendant_traits.items():
-                if traits.get(category) == choice:
+            for trait, sign in trait_sign_pairs:
+                if trait == choice:
                     trait_to_sign.setdefault(sign, 0)
                     trait_to_sign[sign] += 1
 
