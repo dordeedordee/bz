@@ -785,7 +785,6 @@ if birth_hour_option == "不知道":
         # 正確使用 Skyfield 計算 ASC 對應星座
         if st.session_state["trigger_time_range"]:
             def get_ascendant_sign(eph, t, latitude, longitude):
-                from skyfield.positionlib import ICRF
                 earth = eph["earth"]
                 observer = earth + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
                 astrometric = observer.at(t).observe(eph['sun'])  # 只為了建立觀測點
