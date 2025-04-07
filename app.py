@@ -9,8 +9,6 @@ import sxtwl
 import math
 import streamlit as st
 from skyfield.api import load, Topos
-from skyfield.api import load as skyfield_load
-from skyfield import astrology
 import pytz
 from geopy.geocoders import Nominatim
 
@@ -710,12 +708,6 @@ st.markdown("請輸入出生時間：")
 #birth_hour = st.number_input("時辰（24小時制）", min_value=0, max_value=23, value=7)
 #gender = st.selectbox("性別：", ["男", "女"])
 
-birth_year = st.number_input("年份", min_value=1900, max_value=2100, value=1977)
-birth_month = st.number_input("月份", min_value=1, max_value=12, value=7)
-birth_day = st.number_input("日期", min_value=1, max_value=31, value=7)
-birth_hour_option = st.selectbox("時辰（24小時制）", [f"{i}" for i in range(24)] + ["不知道"])
-gender = st.selectbox("性別：", ["男", "女"])
-
 if birth_hour_option == "不知道":
     city = st.text_input("請輸入出生城市（如 Taipei）")
     if city:
@@ -744,11 +736,11 @@ if birth_hour_option == "不知道":
                 latitude = location.latitude
                 longitude = location.longitude
                 timezone = pytz.timezone("Asia/Taipei")
-                ts = skyfield_load.timescale()
-                eph = skyfield_load('de421.bsp')
-                start_time = datetime(year, month, day, 0, 0, tzinfo=timezone)
-                end_time = start_time + timedelta(days=1)
-                interval = timedelta(minutes=10)
+                ts = load.timescale()
+                eph = load('de421.bsp')
+                start_time = datetime.datetime(year, month, day, 0, 0, tzinfo=timezone)
+                end_time = start_time + datetime.timedelta(days=1)
+                interval = datetime.timedelta(minutes=10)
                 t = start_time
                 result = []
                 start_interval = None
@@ -756,9 +748,11 @@ if birth_hour_option == "不知道":
                 while t < end_time:
                     utc_dt = t.astimezone(pytz.utc)
                     t_sky = ts.from_datetime(utc_dt)
-                    houses, asc_deg = astrology.houses(t_sky, latitude, longitude)
-                    asc_degree = asc_deg[0]
-                    current_sign = get_sign(asc_degree)
+                    observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
+                    gast = t_sky.gast
+                    lst_deg = (gast * 15 + longitude) % 360
+                    asc_deg = lst_deg % 360
+                    current_sign = get_sign(asc_deg)
 
                     if current_sign == sign_name:
                         if start_interval is None:
@@ -778,13 +772,10 @@ if birth_hour_option == "不知道":
                     for r in result:
                         time_range = f"{r[0].strftime('%H:%M')} - {r[1].strftime('%H:%M')}"
                         st.info(time_range)
-                        hour_start = r[0].hour
-                        hour_end = r[1].hour
-                        for h in range(hour_start, hour_end + 1):
+                        for h in range(r[0].hour, r[1].hour + 1):
                             if 0 <= h <= 23:
                                 time_options.append(h)
-                    time_options = sorted(set(time_options))
-                    return time_options
+                    return sorted(set(time_options))
                 else:
                     st.warning(f"此日此地未出現上升星座 {sign_name} 的區段，請檢查輸入或改變條件。")
                     return []
@@ -796,6 +787,7 @@ if birth_hour_option == "不知道":
 else:
     birth_hour = int(birth_hour_option)
     st.success(f"您選擇的出生時間為：{birth_hour} 時")
+
     
 
 if st.button("分析八字"):
