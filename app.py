@@ -756,6 +756,7 @@ def estimate_birth_time(year, month, day, city, best_match):
         observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
         asc_vector = observer.at(t_sky).from_altaz(alt_degrees=0.0, az_degrees=90.0)
         if asc_vector.t is None:
+            t += interval
             continue
         asc_ecliptic = asc_vector.frame_latlon(ecliptic_frame)
         lon = asc_ecliptic[1].degrees % 360
