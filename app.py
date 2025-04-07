@@ -748,9 +748,9 @@ if birth_hour_option == "不知道":
                 timezone = pytz.timezone("Asia/Taipei")
                 ts = load.timescale()
                 eph = load('de421.bsp')
-                start_time = datetime.datetime(year, month, day, 0, 0, tzinfo=timezone)
-                end_time = start_time + datetime.timedelta(days=1)
-                interval = datetime.timedelta(minutes=10)
+                start_time = datetime(year, month, day, 0, 0, tzinfo=timezone)
+                end_time = start_time + timedelta(days=1)
+                interval = timedelta(minutes=10)
                 t = start_time
                 result = []
                 start_interval = None
@@ -800,7 +800,6 @@ if birth_hour_option == "不知道":
 else:
     birth_hour = int(birth_hour_option)
     st.success(f"您選擇的出生時間為：{birth_hour} 時")
-
     
 
 if st.button("分析八字"):
