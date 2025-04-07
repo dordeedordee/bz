@@ -727,6 +727,7 @@ if birth_hour_option == "不知道":
     if city:
         st.subheader("依據外貌與性格推測上升星座")
         selected = []
+        selected_signs = []
         for category in ["家庭背景", "外貌氣質", "個人特質"]:
             #options = [f"{sign}: {traits[category]}" for sign, traits in ascendant_traits.items()]
             options = [traits[category] for traits in ascendant_traits.values()]
