@@ -740,11 +740,11 @@ if birth_hour_option == "不知道":
                 selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
                 selected_signs.append(selected_sign)
 
-            if st.button("推算可能出生時段"):
+            if st.button("推算可能出生時段", key="compute_time"):
                 st.session_state["show_traits"] = False
                 st.session_state["selected_signs"] = selected_signs
 
-        if not st.session_state["show_traits"]:
+        elif not st.session_state["show_traits"]:
             selected_signs = st.session_state.get("selected_signs", [])
             score = {}
             for sign in selected_signs:
@@ -812,6 +812,7 @@ if birth_hour_option == "不知道":
 else:
     birth_hour = int(birth_hour_option)
     st.code(f"您選擇的出生時間為：{birth_hour} 時")
+    
     
 
 if st.button("分析八字"):
