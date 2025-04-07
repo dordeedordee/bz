@@ -744,7 +744,7 @@ if birth_hour_option == "不知道":
             if compute:
                 st.session_state["show_traits"] = False
                 st.session_state["selected_signs"] = selected_signs
-                st.experimental_rerun()
+                st.session_state.pop("selected_signs", None)
 
         elif not st.session_state["show_traits"]:
             selected_signs = st.session_state.get("selected_signs", [])
