@@ -791,7 +791,7 @@ if birth_hour_option == "不知道":
         if st.session_state["estimated"]:
             ranges = estimate_birth_time(best_match, birth_year, birth_month, birth_day, city)
             if ranges:
-                st.subheader("🕒 根據推測，以下是可能的出生時間段：")
+                st.subheader("根據推測，以下是可能的出生時間段：")
                 time_options = []
                 for r in ranges:
                     time_range = f"{r[0].strftime('%H:%M')} - {r[1].strftime('%H:%M')}"
@@ -801,8 +801,8 @@ if birth_hour_option == "不知道":
                             time_options.append(h)
 
                 birth_hour = st.selectbox("請從上述推估中選擇最符合的時辰：", sorted(set(time_options)), key="final_hour")
-                if birth_hour is not None:
-                    st.success(f"✅ 您選擇的推估時辰為：{birth_hour} 時")
+                #if birth_hour is not None:
+                #    st.success(f"✅ 您選擇的推估時辰為：{birth_hour} 時")
 else:
     birth_hour = int(birth_hour_option)
     st.success(f"您選擇的出生時間為：{birth_hour} 時")
