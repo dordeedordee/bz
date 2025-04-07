@@ -749,6 +749,9 @@ if birth_hour_option == "不知道":
                     utc_dt = t.astimezone(pytz.utc)
                     t_sky = ts.from_datetime(utc_dt)
                     observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
+                    astrometric = observer.at(t_sky).observe(eph['sun'])
+                    apparent = astrometric.apparent()
+                    ra, dec, distance = apparent.radec()
                     gast = t_sky.gast
                     lst_deg = (gast * 15 + longitude) % 360
                     asc_deg = lst_deg % 360
