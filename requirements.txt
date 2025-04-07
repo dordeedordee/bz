@@ -3,4 +3,5 @@ sxtwl
 skyfield
 geopy
 pytz
+flatlib
 wheel

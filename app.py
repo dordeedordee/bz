@@ -4,13 +4,17 @@
 #import base64
 
 
-from datetime import datetime, timedelta
+#from datetime import datetime, timedelta
 import sxtwl
 import math
 import streamlit as st
-from skyfield.api import load, Topos
+#from skyfield.api import load, Topos
 import pytz
 import random
+from flatlib.chart import Chart
+from flatlib.datetime import Datetime
+from flatlib.geopos import GeoPos
+from datetime import datetime as dt_py, timedelta
 from geopy.geocoders import Nominatim
 
 # ========== 上升星座特徵資料庫 ==========
@@ -779,7 +783,7 @@ if birth_hour_option == "不知道":
                 if st.button("📍 推算可能出生時段"):
                     st.session_state["trigger_time_range"] = True
 
-        # 顯示時間推估結果
+        # 顯示時間推估結果（使用 flatlib 取代 Skyfield）
         if st.session_state["trigger_time_range"]:
             def estimate_birth_time(sign_name, year, month, day, city):
                 geolocator = Nominatim(user_agent="asc_finder")
@@ -790,35 +794,30 @@ if birth_hour_option == "不知道":
 
                 latitude = location.latitude
                 longitude = location.longitude
-                timezone = pytz.timezone("Asia/Taipei")
-                ts = load.timescale()
-                eph = load('de421.bsp')
-                start_time = datetime(year, month, day, 0, 0, tzinfo=timezone)
-                end_time = start_time + timedelta(days=1)
-                interval = timedelta(minutes=10)
-                t = start_time
+
                 result = []
+                interval = timedelta(minutes=10)
+                start_time = dt_py(year, month, day, 0, 0)
+                end_time = start_time + timedelta(days=1)
+                t = start_time
                 start_interval = None
 
                 while t < end_time:
-                    utc_dt = t.astimezone(pytz.utc)
-                    t_sky = ts.from_datetime(utc_dt)
-                    observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
-                    astrometric = observer.at(t_sky).observe(eph['sun'])
-                    apparent = astrometric.apparent()
-                    ra, dec, distance = apparent.radec()
-                    gast = t_sky.gast
-                    lst_deg = (gast * 15 + longitude) % 360
-                    asc_deg = lst_deg % 360
-                    current_sign = get_sign(asc_deg)
+                    date_str = f"{t.year}-{t.month:02d}-{t.day:02d}"
+                    time_str = f"{t.hour:02d}:{t.minute:02d}"
+                    dt_flat = Datetime(date_str, time_str, '+08:00')
+                    pos = GeoPos(str(latitude), str(longitude))
+                    chart = Chart(dt_flat, pos)
+                    asc = chart.get("ASC").sign
 
-                    if current_sign == best_match:
+                    if asc == sign_name.upper():
                         if start_interval is None:
                             start_interval = t
                     else:
                         if start_interval is not None:
                             result.append((start_interval, t))
                             start_interval = None
+
                     t += interval
 
                 if start_interval is not None:
@@ -842,9 +841,6 @@ if birth_hour_option == "不知道":
 else:
     birth_hour = int(birth_hour_option)
     st.code(f"您選擇的出生時間為：{birth_hour} 時")
-
-
-
     
     
 
