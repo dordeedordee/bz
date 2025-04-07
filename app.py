@@ -746,6 +746,9 @@ def estimate_birth_time(year, month, day, city, best_match):
     latitude = location.latitude
     longitude = location.longitude
 
+    st.info(f"🔍 偵測到城市：{location.address}
+📍 緯度：{latitude:.4f}°，經度：{longitude:.4f}°")
+
     tf = TimezoneFinder()
     tz_str = tf.timezone_at(lng=longitude, lat=latitude)
     timezone = pytz.timezone(tz_str if tz_str else 'Asia/Taipei')
