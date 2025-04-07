@@ -4,13 +4,13 @@
 #import base64
 
 
-#from datetime import datetime, timedelta
+from datetime import datetime, timedelta
 import sxtwl
 import math
 import streamlit as st
 from skyfield.api import load, Topos
 from geopy.geocoders import Nominatim
-from datetime import datetime as dt_py, timedelta
+#from datetime import datetime as dt_py, timedelta
 from timezonefinder import TimezoneFinder
 import pytz
 import random
@@ -816,7 +816,7 @@ if birth_hour_option == "不知道":
                 ts = load.timescale()
                 eph = load('de421.bsp')
 
-                start_time = dt_py(year, month, day, 0, 0, tzinfo=timezone)
+                start_time = datetime(year, month, day, 0, 0, tzinfo=timezone)
                 end_time = start_time + timedelta(days=1)
                 interval = timedelta(minutes=10)
                 t = start_time
@@ -859,7 +859,7 @@ if birth_hour_option == "不知道":
 else:
     birth_hour = int(birth_hour_option)
     st.code(f"您選擇的出生時間為：{birth_hour} 時")
-    
+
     
 
 if st.button("分析八字"):
