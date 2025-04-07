@@ -733,17 +733,18 @@ if birth_hour_option == "不知道":
             st.session_state["selected_signs"] = []
             st.session_state["trigger_estimate"] = False
 
-        st.subheader("依據外貌與性格推測上升星座")
-        selected_signs = []
-        for category in ["家庭背景", "外貌氣質", "個人特質"]:
-            options = [traits[category] for traits in ascendant_traits.values()]
-            choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
-            selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
-            selected_signs.append(selected_sign)
+        if not st.session_state["trigger_estimate"]:
+            st.subheader("依據外貌與性格推測上升星座")
+            selected_signs = []
+            for category in ["家庭背景", "外貌氣質", "個人特質"]:
+                options = [traits[category] for traits in ascendant_traits.values()]
+                choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
+                selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
+                selected_signs.append(selected_sign)
 
-        if st.button("推算可能出生時段"):
-            st.session_state["selected_signs"] = selected_signs
-            st.session_state["trigger_estimate"] = True
+            if st.button("推算可能出生時段"):
+                st.session_state["selected_signs"] = selected_signs
+                st.session_state["trigger_estimate"] = True
 
         if st.session_state["trigger_estimate"]:
             selected_signs = st.session_state["selected_signs"]
