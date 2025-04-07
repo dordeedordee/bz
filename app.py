@@ -784,10 +784,6 @@ if birth_hour_option == "不知道":
 
         # 正確使用 Skyfield 計算 ASC 對應星座
         if st.session_state["trigger_time_range"]:
-            from skyfield.api import load, Topos
-            from skyfield.data import mpc
-            from skyfield.almanac import sidereal_time
-
             def get_ascendant_sign(eph, t, latitude, longitude):
                 from skyfield.positionlib import ICRF
                 earth = eph["earth"]
