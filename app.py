@@ -11,6 +11,7 @@ import streamlit as st
 from skyfield.api import load, Topos
 from skyfield.framelib import ecliptic_frame
 from skyfield.positionlib import ICRF
+from timezonefinder import TimezoneFinder
 import pytz
 import random
 from geopy.geocoders import Nominatim
