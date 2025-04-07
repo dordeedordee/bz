@@ -731,12 +731,17 @@ if birth_hour_option == "不知道":
             #options = [f"{sign}: {traits[category]}" for sign, traits in ascendant_traits.items()]
             options = [traits[category] for traits in ascendant_traits.values()]
             choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
-            selected_sign = choice.split(":")[0]
-            selected.append(selected_sign)
+            #selected_sign = choice.split(":")[0]
+            selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
+            #selected.append(selected_sign)
+            selected_signs.append(selected_sign)
 
         score = {}
-        for trait in selected:
-            score[trait] = score.get(trait, 0) + 1
+        #for trait in selected:
+        #    score[trait] = score.get(trait, 0) + 1
+        #best_match = max(score.items(), key=lambda x: x[1])[0]
+        for sign in selected_signs:
+            score[sign] = score.get(sign, 0) + 1
         best_match = max(score.items(), key=lambda x: x[1])[0]
         st.code(f"最可能的上升星座為：{best_match}")
 
