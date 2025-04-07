@@ -733,19 +733,26 @@ if birth_hour_option == "不知道":
             st.session_state["selected_signs"] = []
             st.session_state["trigger_estimate"] = False
 
+        # ⬇️ 建立一個容器：可清除 trait 選單
+        trait_box = st.empty()
+
+        # ⬇️ 把選項選單放進容器裡
         if not st.session_state["trigger_estimate"]:
-            st.subheader("依據外貌與性格推測上升星座")
-            selected_signs = []
-            for category in ["家庭背景", "外貌氣質", "個人特質"]:
-                options = [traits[category] for traits in ascendant_traits.values()]
-                choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
-                selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
-                selected_signs.append(selected_sign)
+            with trait_box:
+                st.subheader("依據外貌與性格推測上升星座")
+                selected_signs = []
+                for category in ["家庭背景", "外貌氣質", "個人特質"]:
+                    options = [traits[category] for traits in ascendant_traits.values()]
+                    choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
+                    selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
+                    selected_signs.append(selected_sign)
 
-            if st.button("推算可能出生時段"):
-                st.session_state["selected_signs"] = selected_signs
-                st.session_state["trigger_estimate"] = True
+                if st.button("推算可能出生時段"):
+                    st.session_state["selected_signs"] = selected_signs
+                    st.session_state["trigger_estimate"] = True
+                    trait_box.empty()  # ⬅️ 清除 trait box
 
+        # ⬇️ 一旦使用者按下按鈕，顯示結果與出生時間區段
         if st.session_state["trigger_estimate"]:
             selected_signs = st.session_state["selected_signs"]
             score = {}
@@ -753,6 +760,7 @@ if birth_hour_option == "不知道":
                 score[sign] = score.get(sign, 0) + 1
             best_match = max(score.items(), key=lambda x: x[1])[0]
             st.code(f"最可能的上升星座為：{best_match}")
+
 
             def estimate_birth_time(sign_name, year, month, day, city):
                 geolocator = Nominatim(user_agent="asc_finder")
