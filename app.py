@@ -29,6 +29,8 @@ ascendant_traits = {
     "雙魚": {"家庭背景": "家庭情感複雜或混沌", "外貌氣質": "眼神夢幻、有藝術氣息", "個人特質": "感性浪漫、愛幻想、易受影響"}
 }
 
+ascendant_traits_random = dict(random.sample(list(ascendant_traits.items()), len(ascendant_traits)))
+
 zodiac_signs = [
     ("牡羊", 0), ("金牛", 30), ("雙子", 60), ("巨蟹", 90),
     ("獅子", 120), ("處女", 150), ("天秤", 180), ("天蠍", 210),
@@ -729,8 +731,7 @@ if birth_hour_option == "不知道":
         trait_to_sign = {}
         category_traits_map = {}
         for category in ["家庭背景", "外貌氣質", "個人特質"]:
-            trait_sign_pairs = [(traits[category], sign) for sign, traits in ascendant_traits.items()]
-            random.shuffle(trait_sign_pairs)
+            trait_sign_pairs = [(traits[category], sign) for sign, traits in ascendant_traits_random.items()]
             category_traits_map[category] = trait_sign_pairs
 
         selected_traits = []
@@ -814,6 +815,7 @@ if birth_hour_option == "不知道":
 else:
     birth_hour = int(birth_hour_option)
     st.code(f"您選擇的出生時間為：{birth_hour} 時")
+    
 
 if st.button("分析八字"):
 #if analysis_ready and birth_hour is not None and st.button("分析八字"):
