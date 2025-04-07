@@ -754,6 +754,8 @@ def estimate_birth_time(year, month, day, city, best_match):
         t_sky = ts.from_datetime(utc_dt)
         observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
         asc_vector = observer.at(t_sky).from_altaz(alt_degrees=0.0, az_degrees=90.0)
+        if asc_vector.t is None:
+            continue  # 若向量無時間，跳過
         asc_ecliptic = asc_vector.frame_latlon(ecliptic_frame)
         lon = asc_ecliptic[1].degrees % 360
         signs = ["白羊", "金牛", "雙子", "巨蟹", "獅子", "處女", "天秤", "天蠍", "射手", "摩羯", "水瓶", "雙魚"]
