@@ -10,6 +10,7 @@ import math
 import streamlit as st
 from skyfield.api import load, Topos
 import pytz
+import random
 from geopy.geocoders import Nominatim
 
 # ========== 上升星座特徵資料庫 ==========
@@ -726,9 +727,12 @@ if birth_hour_option == "不知道":
         st.subheader("依據外貌與性格推測上升星座")
         selected = []
         for category in ["家庭背景", "外貌氣質", "個人特質"]:
+            shuffled = list(ascendant_traits.items())
+            random.shuffle(shuffled)
+            options = [traits[category] for _, traits in shuffled]
             options = [f"{sign}: {traits[category]}" for sign, traits in ascendant_traits.items()]
             choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
-            selected_sign = choice.split(":")[0]
+            selected_sign = [sign for sign, traits in ascendant_traits.items() if traits[category] == choice][0]
             selected.append(selected_sign)
 
         score = {}
