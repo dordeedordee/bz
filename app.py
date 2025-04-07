@@ -10,8 +10,6 @@ import math
 import streamlit as st
 from skyfield.api import load, Topos
 from skyfield.framelib import ecliptic_frame
-from skyfield.positionlib import ICRF
-from skyfield.units import Angle
 from timezonefinder import TimezoneFinder
 import pytz
 import random
@@ -725,16 +723,6 @@ birth_hour_option = st.selectbox("時辰（24小時制）", [f"{i}" for i in ran
 
 birth_hour = None
 
-def get_ascendant_sign(eph, t, latitude, longitude):
-    observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
-    asc_vector = observer.at(t).from_altaz(alt_degrees=0.0, az_degrees=90.0)
-    asc_ecliptic = asc_vector.frame_latlon(ecliptic_frame)
-    lon = asc_ecliptic[1].degrees % 360
-
-    signs = ["白羊", "金牛", "雙子", "巨蟹", "獅子", "處女", "天秤", "天蠍", "射手", "摩羯", "水瓶", "雙魚"]
-    return signs[int(lon // 30)]
-
-
 def estimate_birth_time(year, month, day, city, best_match):
     geolocator = Nominatim(user_agent="asc_finder")
     location = geolocator.geocode(city)
@@ -744,6 +732,8 @@ def estimate_birth_time(year, month, day, city, best_match):
 
     latitude = location.latitude
     longitude = location.longitude
+
+    st.info(f"🔍 偵測到城市：{location.address} 緯度：{latitude:.4f}°，經度：{longitude:.4f}°")
 
     tf = TimezoneFinder()
     tz_str = tf.timezone_at(lng=longitude, lat=latitude)
@@ -762,7 +752,12 @@ def estimate_birth_time(year, month, day, city, best_match):
     while t < end_time:
         utc_dt = t.astimezone(pytz.utc)
         t_sky = ts.from_datetime(utc_dt)
-        current_sign = get_ascendant_sign(eph, t_sky, latitude, longitude)
+        observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
+        asc_vector = observer.at(t_sky).from_altaz(alt_degrees=0.0, az_degrees=90.0)
+        asc_ecliptic = asc_vector.frame_latlon(ecliptic_frame)
+        lon = asc_ecliptic[1].degrees % 360
+        signs = ["白羊", "金牛", "雙子", "巨蟹", "獅子", "處女", "天秤", "天蠍", "射手", "摩羯", "水瓶", "雙魚"]
+        current_sign = signs[int(lon // 30)]
 
         if current_sign == best_match:
             if start_interval is None:
