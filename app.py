@@ -6,12 +6,10 @@
 
 from datetime import datetime, timedelta
 import sxtwl
-import math
 import streamlit as st
-from skyfield.api import load, Topos
+import pandas as pd
 import pytz
 import random
-from timezonefinder import TimezoneFinder
 from geopy.geocoders import Nominatim
 
 # ========== 上升星座特徵資料庫 ==========
@@ -722,8 +720,39 @@ birth_hour_option = st.selectbox("時辰（24小時制）", [f"{i}" for i in ran
 
 birth_hour = None
 
+def estimate_birth_time(sign_name, year, month, day, city):
+    city_file_map = {
+        "taipei": "ascendant_ranges_Taipei.csv",
+        "台北": "ascendant_ranges_Taipei.csv",
+        "taiwan": "ascendant_ranges_Taipei.csv",
+        "hong kong": "ascendant_ranges_Hong_Kong.csv",
+        "香港": "ascendant_ranges_Hong_Kong.csv"
+    }
+
+    file_key = city.strip().lower()
+    if file_key not in city_file_map:
+        print("目前僅支援『台北（Taipei）』與『香港（Hong Kong）』的出生地計算。")
+        return []
+
+    file_path = city_file_map[file_key]
+    try:
+        df = pd.read_csv(file_path)
+    except Exception as e:
+        print(f"無法載入資料檔案：{e}")
+        return []
+
+    date_str = f"{year:04d}-{month:02d}-{day:02d}"
+    df_day = df[df["Date"] == date_str]
+    df_sign = df_day[df_day["Sign"] == sign_name]
+
+    if df_sign.empty:
+        print("找不到該日與星座對應的時間範圍。")
+        return []
+
+    return list(zip(df_sign["Start"], df_sign["End"]))
+
 if birth_hour_option == "不知道":
-    city = st.text_input("請輸入出生城市（如 Taipei）")
+    city = st.text_input("請輸入出生城市（如 Taipei 或 Hong Kong）")
 
     if city:
         if "selected_signs" not in st.session_state:
@@ -778,79 +807,18 @@ if birth_hour_option == "不知道":
                     st.session_state["trigger_time_range"] = True
 
         if st.session_state["trigger_time_range"]:
-            def estimate_birth_time(year, month, day, city, best_match):
-                geolocator = Nominatim(user_agent="asc_finder")
-                location = geolocator.geocode(city)
-                if location is None:
-                    st.error("找不到城市位置，請確認拼寫是否正確。")
-                    return []
-
-                latitude = location.latitude
-                longitude = location.longitude
-
-                st.info(f"🔍 偵測到城市：{location.address} 緯度：{latitude:.4f}°，經度：{longitude:.4f}°")
-
-                tf = TimezoneFinder()
-                tz_str = tf.timezone_at(lng=longitude, lat=latitude)
-                timezone = pytz.timezone(tz_str if tz_str else 'Asia/Taipei')
-
-                ts = load.timescale()
-                eph = load('de421.bsp')
-
-                start_time = datetime(year, month, day, 0, 0, tzinfo=timezone)
-                end_time = start_time + timedelta(days=1)
-                interval = timedelta(minutes=10)
-                t = start_time
-                result = []
-                start_interval = None
-
-                signs = ["白羊", "金牛", "雙子", "巨蟹", "獅子", "處女", "天秤", "天蠍", "射手", "摩羯", "水瓶", "雙魚"]
-
-                while t < end_time:
-                    utc_dt = t.astimezone(pytz.utc)
-                    t_sky = ts.from_datetime(utc_dt)
-                    observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
-
-                    asc_vector = observer.at(t_sky).from_altaz(alt_degrees=0.0, az_degrees=90.0)
-                    if asc_vector is None:
-                        t += interval
-                        continue
-
-                    asc_ecliptic = asc_vector.frame_latlon(ecliptic_frame, t=t_sky)
-                    lon = asc_ecliptic[1].degrees % 360
-                    current_sign = signs[int(lon // 30)]
-
-                    if current_sign == best_match:
-                        if start_interval is None:
-                            start_interval = t
-                    else:
-                        if start_interval is not None:
-                            result.append((start_interval, t))
-                            start_interval = None
-
-                    t += interval
-
-                if start_interval is not None:
-                    result.append((start_interval, end_time))
-
-                return result
-
-            ranges = estimate_birth_time(birth_year, birth_month, birth_day, city, best_match)
+            ranges = estimate_birth_time(best_match, birth_year, birth_month, birth_day, city)
             if ranges:
                 st.subheader("根據推測，以下是可能的出生時間段：")
                 time_options = []
-                for r in ranges:
-                    time_range = f"{r[0].strftime('%H:%M')} - {r[1].strftime('%H:%M')}"
-                    st.code(time_range)
-                    for h in range(r[0].hour, r[1].hour + 1):
+                for start, end in ranges:
+                    st.code(f"{start} - {end}")
+                    for h in range(int(start.split(":")[0]), int(end.split(":")[0]) + 1):
                         if 0 <= h <= 23:
                             time_options.append(h)
-
                 birth_hour = st.selectbox("請從上述推估中選擇最符合的時辰：", sorted(set(time_options)), key="final_hour")
-else:
-    birth_hour = int(birth_hour_option)
-    st.code(f"您選擇的出生時間為：{birth_hour} 時")
-
+            else:
+                st.warning("無法根據該城市與日期找到對應的出生時段。")
     
 
 if st.button("分析八字"):
