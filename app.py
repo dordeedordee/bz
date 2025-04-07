@@ -730,17 +730,16 @@ if birth_hour_option == "不知道":
         if "trigger_estimate" not in st.session_state:
             st.session_state["trigger_estimate"] = False
 
-        # 🧹 reset button
+        # 🔁 重設邏輯
         if st.button("重設特質"):
             st.session_state["selected_signs"] = []
             st.session_state["trigger_estimate"] = False
             for key in ["家庭背景", "外貌氣質", "個人特質"]:
                 st.session_state.pop(key, None)
 
-        # 🔲 建立容器，之後可以清除 trait boxes
+        # 🧱 建立 trait 選單容器
         trait_container = st.container()
 
-        # 🧠 只在尚未推算時顯示 trait 選單
         if not st.session_state["trigger_estimate"]:
             with trait_container:
                 st.subheader("依據外貌與性格推測上升星座")
@@ -751,15 +750,21 @@ if birth_hour_option == "不知道":
                     selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
                     selected_signs.append(selected_sign)
 
-                # ⌨️ 按下按鈕就觸發儲存並清除 UI
                 if st.button("✨ 推算可能出生時段"):
                     st.session_state["selected_signs"] = selected_signs
                     st.session_state["trigger_estimate"] = True
+
+                    # 🎯 Fake Refresh Trick!
+                    fake_refresh = st.empty()
+                    fake_refresh.selectbox("🌀 請稍候...", ["處理中..."])
+                    fake_refresh.empty()
+
+                    # ✅ 清除舊欄位 key
                     for key in ["家庭背景", "外貌氣質", "個人特質"]:
                         st.session_state.pop(key, None)
-                    trait_container.empty()  # ✅ 清除 UI
+                    trait_container.empty()  # ⬅️ 清除 trait 選單
 
-        # 🟢 顯示結果與時間推估
+        # 🎯 顯示結果與推算出生時間段
         if st.session_state["trigger_estimate"]:
             selected_signs = st.session_state["selected_signs"]
             score = {}
@@ -829,6 +834,7 @@ if birth_hour_option == "不知道":
 else:
     birth_hour = int(birth_hour_option)
     st.code(f"您選擇的出生時間為：{birth_hour} 時")
+
 
     
     
