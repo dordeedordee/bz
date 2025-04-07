@@ -727,16 +727,13 @@ birth_hour = None
 
 def get_ascendant_sign(eph, t, latitude, longitude):
     observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
-    sidereal_time = t.gast * 15 + longitude
-    sidereal_time = sidereal_time % 360
-    ra = Angle(degrees=sidereal_time)
-    dec = Angle(degrees=0.0)
-    asc_vector = ICRF.from_ra_dec(ra, dec, t)
+    asc_vector = observer.at(t).from_altaz(alt_degrees=0.0, az_degrees=90.0)
     asc_ecliptic = asc_vector.frame_latlon(ecliptic_frame)
     lon = asc_ecliptic[1].degrees % 360
 
     signs = ["白羊", "金牛", "雙子", "巨蟹", "獅子", "處女", "天秤", "天蠍", "射手", "摩羯", "水瓶", "雙魚"]
     return signs[int(lon // 30)]
+
 
 def estimate_birth_time(year, month, day, city, best_match):
     geolocator = Nominatim(user_agent="asc_finder")
