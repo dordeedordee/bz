@@ -10,6 +10,7 @@ import math
 import streamlit as st
 from skyfield.api import load, Topos
 import pytz
+import random
 from geopy.geocoders import Nominatim
 
 # ========== 上升星座特徵資料庫 ==========
