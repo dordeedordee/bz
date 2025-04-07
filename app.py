@@ -727,6 +727,10 @@ if birth_hour_option == "不知道":
         if "show_traits" not in st.session_state:
             st.session_state["show_traits"] = True
 
+        if st.button("重設特質"):
+            st.session_state["show_traits"] = True
+            st.session_state.pop("selected_signs", None)
+
         if st.session_state["show_traits"]:
             st.subheader("依據外貌與性格推測上升星座")
             selected_signs = []
@@ -805,10 +809,6 @@ if birth_hour_option == "不知道":
                             time_options.append(h)
 
                 birth_hour = st.selectbox("請從上述推估中選擇最符合的時辰：", sorted(set(time_options)), key="final_hour")
-
-            if st.button("重設特質"):
-                st.session_state["show_traits"] = True
-                st.session_state.pop("selected_signs", None)
 else:
     birth_hour = int(birth_hour_option)
     st.code(f"您選擇的出生時間為：{birth_hour} 時")
