@@ -729,10 +729,13 @@ if birth_hour_option == "不知道":
         st.subheader("依據外貌與性格推測上升星座")
 
         trait_to_sign = {}
-        category_traits_map = {}
+        if "category_traits_map" not in st.session_state:
+            st.session_state["category_traits_map"] = {}
         for category in ["家庭背景", "外貌氣質", "個人特質"]:
             trait_sign_pairs = [(traits[category], sign) for sign, traits in ascendant_traits_random.items()]
-            category_traits_map[category] = trait_sign_pairs
+            st.session_state["category_traits_map"][category] = trait_sign_pairs
+
+        category_traits_map = st.session_state["category_traits_map"]
 
         selected_traits = []
         for category in ["家庭背景", "外貌氣質", "個人特質"]:
@@ -815,6 +818,7 @@ if birth_hour_option == "不知道":
 else:
     birth_hour = int(birth_hour_option)
     st.code(f"您選擇的出生時間為：{birth_hour} 時")
+
     
 
 if st.button("分析八字"):
