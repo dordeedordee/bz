@@ -727,12 +727,12 @@ if birth_hour_option == "不知道":
         st.subheader("依據外貌與性格推測上升星座")
         selected = []
         for category in ["家庭背景", "外貌氣質", "個人特質"]:
-            shuffled = list(ascendant_traits.items())
+            shuffled = [(sign, traits[category]) for sign, traits in ascendant_traits.items()]
             random.shuffle(shuffled)
-            options = [traits[category] for _, traits in shuffled]
+            options = [trait for _, trait in shuffled]
             options = [f"{sign}: {traits[category]}" for sign, traits in ascendant_traits.items()]
             choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
-            selected_sign = [sign for sign, traits in ascendant_traits.items() if traits[category] == choice][0]
+            selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
             selected.append(selected_sign)
 
         score = {}
@@ -807,7 +807,7 @@ if birth_hour_option == "不知道":
                 birth_hour = st.selectbox("請從上述推估中選擇最符合的時辰：", sorted(set(time_options)), key="final_hour")
 else:
     birth_hour = int(birth_hour_option)
-    st.success(f"您選擇的出生時間為：{birth_hour} 時")
+    st.code(f"您選擇的出生時間為：{birth_hour} 時")
 
 if st.button("分析八字"):
 #if analysis_ready and birth_hour is not None and st.button("分析八字"):
