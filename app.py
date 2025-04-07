@@ -725,47 +725,39 @@ if birth_hour_option == "不知道":
     city = st.text_input("請輸入出生城市（如 Taipei）")
 
     if city:
+        # 初始化狀態
         if "selected_signs" not in st.session_state:
             st.session_state["selected_signs"] = []
-        if "trigger_estimate" not in st.session_state:
-            st.session_state["trigger_estimate"] = False
+        if "trigger_zodiac" not in st.session_state:
+            st.session_state["trigger_zodiac"] = False
+        if "trigger_time_range" not in st.session_state:
+            st.session_state["trigger_time_range"] = False
 
-        # 🔁 重設邏輯
         if st.button("重設特質"):
             st.session_state["selected_signs"] = []
-            st.session_state["trigger_estimate"] = False
+            st.session_state["trigger_zodiac"] = False
+            st.session_state["trigger_time_range"] = False
             for key in ["家庭背景", "外貌氣質", "個人特質"]:
                 st.session_state.pop(key, None)
 
-        # 🧱 建立 trait 選單容器
-        trait_container = st.container()
+        # 只在未推算時顯示選單
+        if not st.session_state["trigger_zodiac"]:
+            st.subheader("依據外貌與性格推測上升星座")
+            selected_signs = []
+            for category in ["家庭背景", "外貌氣質", "個人特質"]:
+                options = [traits[category] for traits in ascendant_traits.values()]
+                choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
+                selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
+                selected_signs.append(selected_sign)
 
-        if not st.session_state["trigger_estimate"]:
-            with trait_container:
-                st.subheader("依據外貌與性格推測上升星座")
-                selected_signs = []
-                for category in ["家庭背景", "外貌氣質", "個人特質"]:
-                    options = [traits[category] for traits in ascendant_traits.values()]
-                    choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
-                    selected_sign = next(sign for sign, traits in ascendant_traits.items() if traits[category] == choice)
-                    selected_signs.append(selected_sign)
+            if st.button("🔮 推算星座"):
+                st.session_state["selected_signs"] = selected_signs
+                st.session_state["trigger_zodiac"] = True
+                for key in ["家庭背景", "外貌氣質", "個人特質"]:
+                    st.session_state.pop(key, None)
 
-                if st.button("✨ 推算可能出生時段"):
-                    st.session_state["selected_signs"] = selected_signs
-                    st.session_state["trigger_estimate"] = True
-
-                    # 🎯 Fake Refresh Trick!
-                    fake_refresh = st.empty()
-                    fake_refresh.selectbox("🌀 請稍候...", ["處理中..."])
-                    fake_refresh.empty()
-
-                    # ✅ 清除舊欄位 key
-                    for key in ["家庭背景", "外貌氣質", "個人特質"]:
-                        st.session_state.pop(key, None)
-                    trait_container.empty()  # ⬅️ 清除 trait 選單
-
-        # 🎯 顯示結果與推算出生時間段
-        if st.session_state["trigger_estimate"]:
+        # 顯示推算的星座與「下一步按鈕」
+        if st.session_state["trigger_zodiac"]:
             selected_signs = st.session_state["selected_signs"]
             score = {}
             for sign in selected_signs:
@@ -773,6 +765,12 @@ if birth_hour_option == "不知道":
             best_match = max(score.items(), key=lambda x: x[1])[0]
             st.code(f"最可能的上升星座為：{best_match}")
 
+            if not st.session_state["trigger_time_range"]:
+                if st.button("📍 推算可能出生時段"):
+                    st.session_state["trigger_time_range"] = True
+
+        # 顯示時間推估結果
+        if st.session_state["trigger_time_range"]:
             def estimate_birth_time(sign_name, year, month, day, city):
                 geolocator = Nominatim(user_agent="asc_finder")
                 location = geolocator.geocode(city)
@@ -804,7 +802,7 @@ if birth_hour_option == "不知道":
                     asc_deg = lst_deg % 360
                     current_sign = get_sign(asc_deg)
 
-                    if current_sign == sign_name:
+                    if current_sign == best_match:
                         if start_interval is None:
                             start_interval = t
                     else:
@@ -834,6 +832,7 @@ if birth_hour_option == "不知道":
 else:
     birth_hour = int(birth_hour_option)
     st.code(f"您選擇的出生時間為：{birth_hour} 時")
+
 
 
     
