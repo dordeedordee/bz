@@ -11,7 +11,6 @@ import streamlit as st
 from skyfield.api import load, Topos
 from skyfield.framelib import ecliptic_frame
 from skyfield.positionlib import ICRF
-from skyfield.units import Angle
 from timezonefinder import TimezoneFinder
 import pytz
 import random
@@ -729,9 +728,8 @@ def get_ascendant_sign(eph, t, latitude, longitude):
     observer = eph['earth'] + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
     sidereal_time = t.gast * 15 + longitude
     sidereal_time = sidereal_time % 360
-    ra = Angle(degrees=sidereal_time)
-    dec = Angle(degrees=0.0)
-    asc_vector = ICRF.from_ra_dec(ra, dec, t)
+
+    asc_vector = ICRF.from_ra_dec(sidereal_time, 0.0)
     asc_ecliptic = asc_vector.frame_latlon(ecliptic_frame)
     lon = asc_ecliptic[1].degrees % 360
 
@@ -748,8 +746,6 @@ def estimate_birth_time(year, month, day, city, best_match):
 
     latitude = location.latitude
     longitude = location.longitude
-
-    st.info(f"🔍 偵測到城市：{location.address} 緯度：{latitude:.4f}°，經度：{longitude:.4f}°")
 
     tf = TimezoneFinder()
     tz_str = tf.timezone_at(lng=longitude, lat=latitude)
