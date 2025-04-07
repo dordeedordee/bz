@@ -725,13 +725,17 @@ if birth_hour_option == "不知道":
     city = st.text_input("請輸入出生城市（如 Taipei）")
     if city:
         st.subheader("依據外貌與性格推測上升星座")
-        selected_traits = []
-        trait_to_sign = {}
-        category_to_sign_map = {}
 
+        trait_to_sign = {}
+        category_traits_map = {}
         for category in ["家庭背景", "外貌氣質", "個人特質"]:
             trait_sign_pairs = [(traits[category], sign) for sign, traits in ascendant_traits.items()]
             random.shuffle(trait_sign_pairs)
+            category_traits_map[category] = trait_sign_pairs
+
+        selected_traits = []
+        for category in ["家庭背景", "外貌氣質", "個人特質"]:
+            trait_sign_pairs = category_traits_map[category]
             trait_options = [pair[0] for pair in trait_sign_pairs]
             choice = st.selectbox(f"請選擇符合的 {category} 敘述：", trait_options, key=category)
             selected_traits.append(choice)
