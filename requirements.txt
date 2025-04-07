@@ -3,5 +3,5 @@ sxtwl
 skyfield
 geopy
 pytz
-flatlib
+timezonefinder
 wheel
