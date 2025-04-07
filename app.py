@@ -29,7 +29,7 @@ ascendant_traits = {
     "雙魚": {"家庭背景": "家庭情感複雜或混沌", "外貌氣質": "眼神夢幻、有藝術氣息", "個人特質": "感性浪漫、愛幻想、易受影響"}
 }
 
-ascendant_traits_random = dict(random.sample(list(ascendant_traits.items()), len(ascendant_traits)))
+#ascendant_traits_random = dict(random.sample(list(ascendant_traits.items()), len(ascendant_traits)))
 
 zodiac_signs = [
     ("牡羊", 0), ("金牛", 30), ("雙子", 60), ("巨蟹", 90),
@@ -729,7 +729,7 @@ if birth_hour_option == "不知道":
         st.subheader("依據外貌與性格推測上升星座")
         selected = []
         for category in ["家庭背景", "外貌氣質", "個人特質"]:
-            options = [f"{sign}: {traits[category]}" for sign, traits in ascendant_traits_random.items()]
+            options = [f"{sign}: {traits[category]}" for sign, traits in ascendant_traits.items()]
             choice = st.selectbox(f"請選擇符合的 {category} 敘述：", options, key=category)
             selected_sign = choice.split(":")[0]
             selected.append(selected_sign)
