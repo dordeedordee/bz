@@ -816,7 +816,7 @@ if birth_hour_option == "不知道":
                         t += interval
                         continue
 
-                    asc_ecliptic = asc_vector.frame_latlon(ecliptic_frame)
+                    asc_ecliptic = asc_vector.frame_latlon(ecliptic_frame, t=t_sky)
                     lon = asc_ecliptic[1].degrees % 360
                     current_sign = signs[int(lon // 30)]
 
@@ -850,6 +850,7 @@ if birth_hour_option == "不知道":
 else:
     birth_hour = int(birth_hour_option)
     st.code(f"您選擇的出生時間為：{birth_hour} 時")
+
     
 
 if st.button("分析八字"):
