@@ -748,6 +748,8 @@ if birth_hour_option == "不知道":
                 if st.button("推算可能出生時段"):
                     st.session_state["selected_signs"] = selected_signs
                     st.session_state["trigger_estimate"] = True  # 👈 按下按鈕後會隱藏 trait 區塊
+                    for category in ["家庭背景", "外貌氣質", "個人特質"]:
+                        st.session_state.pop(category, None)
 
         # 顯示預測與時間推估
         if st.session_state["trigger_estimate"]:
