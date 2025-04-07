@@ -903,16 +903,21 @@ if birth_hour_option == "不知道":
                         st.session_state.pop(key, None)
 
         if st.session_state["trigger_zodiac"]:
+            trait_scale = {"高": 2, "中": 1, "低": 0}
+
             scores = {}
             user_traits = st.session_state["selected_signs"]
-            for sign, traits in ascendant_traits.items():
-                match_count = sum(
-                    1 for category, user_value in user_traits.items()
-                    if traits.get(category) == user_value
-                )
-                scores[sign] = match_count
 
-            best_match = max(scores.items(), key=lambda x: x[1])[0]
+            for sign, traits in ascendant_traits.items():
+                distance = 0
+                for category, user_value in user_traits.items():
+                    sign_value = traits.get(category)
+                    if sign_value is not None and user_value in trait_scale:
+                        distance += abs(trait_scale[sign_value] - trait_scale[user_value])
+                scores[sign] = distance
+
+            # 選出曼哈頓距離最小的星座
+            best_match = min(scores.items(), key=lambda x: x[1])[0]
             st.code(f"最可能的上升星座為：{best_match}")
 
             if not st.session_state["trigger_time_range"]:
