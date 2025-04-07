@@ -731,7 +731,7 @@ def get_ascendant_sign(eph, t, latitude, longitude):
     sidereal_time = sidereal_time % 360
     ra = Angle(degrees=sidereal_time)
     dec = Angle(degrees=0.0)
-    asc_vector = ICRF.from_ra_dec(ra, dec)
+    asc_vector = ICRF.from_ra_dec(ra, dec, t)
     asc_ecliptic = asc_vector.frame_latlon(ecliptic_frame)
     lon = asc_ecliptic[1].degrees % 360
 
