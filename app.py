@@ -784,17 +784,20 @@ if birth_hour_option == "不知道":
 
         # 正確使用 Skyfield 計算 ASC 對應星座
         if st.session_state["trigger_time_range"]:
+
             def get_ascendant_sign(eph, t, latitude, longitude):
                 earth = eph["earth"]
                 observer = earth + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
                 astrometric = observer.at(t).observe(eph['sun'])  # 只為了建立觀測點
-                lst_deg = (t.gast * 15 + longitude) % 360
+
+                gast = t.gast  # Greenwich Apparent Sidereal Time
+                lst_deg = (gast * 15 + longitude) % 360
                 asc_deg = lst_deg % 360
 
                 signs = ["白羊", "金牛", "雙子", "巨蟹", "獅子", "處女", "天秤", "天蠍", "射手", "摩羯", "水瓶", "雙魚"]
                 return signs[int(asc_deg / 30)]
 
-            def estimate_birth_time(sign_name, year, month, day, city):
+            def estimate_birth_time(sign_name, year, month, day, city, best_match):
                 geolocator = Nominatim(user_agent="asc_finder")
                 location = geolocator.geocode(city)
                 if location is None:
@@ -838,7 +841,7 @@ if birth_hour_option == "不知道":
 
                 return result
 
-            ranges = estimate_birth_time(best_match, birth_year, birth_month, birth_day, city)
+            ranges = estimate_birth_time(best_match, birth_year, birth_month, birth_day, city, best_match)
             if ranges:
                 st.subheader("根據推測，以下是可能的出生時間段：")
                 time_options = []
