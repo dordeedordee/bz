@@ -136,8 +136,6 @@ ascendant_traits = {
     }
 }
 
-
-
 zodiac_signs = [
     ("白羊", 0), ("金牛", 30), ("雙子", 60), ("巨蟹", 90),
     ("獅子", 120), ("處女", 150), ("天秤", 180), ("天蠍", 210),
@@ -861,7 +859,7 @@ def estimate_birth_time(sign_name, year, month, day, city):
 
 
 #### uncomment the following lines to reset the session after changing the user input fields
-#if st.button("🔄 重設整個應用程式"):
+#if st.button("重設整個應用程式"):
 #    st.session_state.clear()
 #    st.experimental_rerun()
 
