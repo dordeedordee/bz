@@ -1,7 +1,13 @@
-#import streamlit as st
-#from datetime import datetime
-#import sxtwl  # 四象推命庫
-#import base64
+## app.py is the main program behind bzeasy.streamlit.app, which allows users to
+## provide birthyear, birthmonth, birthtime information, based on which
+## it computes the person's bazi. 
+## Very often, the birth time is unknown. App.py includes a function that allows
+## users to guesstimate the ascendant signs based on a variety of personality or
+## appearance traits. With the ascendant sign, users can rectify the associated
+## birth time range. Then users can select a specific hour for finding the bazi.
+## Currently, the program only supports the birthtime rectification of people 
+## who were born in HK or Taiwan. 
+
 
 
 from datetime import datetime, timedelta
@@ -911,7 +917,7 @@ if birth_hour_option == "不知道":
                     selected_signs[category] = choice
                     valid_count += 1
 
-            if st.button("🔮 推算星座"):
+            if st.button("推算星座"):
                 if valid_count == 0:
                     st.warning("由於您所有特質皆選擇『不知道』，無法推算上升星座。")
                 else:
@@ -939,7 +945,7 @@ if birth_hour_option == "不知道":
             st.code(f"最可能的上升星座為：{best_match}")
 
             if not st.session_state["trigger_time_range"]:
-                if st.button("📍 推算可能出生時段"):
+                if st.button("推算可能出生時段"):
                     st.session_state["trigger_time_range"] = True
 
         if st.session_state["trigger_time_range"]:
