@@ -994,7 +994,7 @@ def estimate_birth_time(sign_name, year, month, day, city):
 if birth_hour_option == "不知道":
     city_map = {
         "Taiwan（台灣）": "Taipei",
-        "Hong Kong（香港）": "Hong Kong"，
+        "Hong Kong（香港）": "Hong Kong",
         "Kuala Lumpur (吉隆坡) ": "Kuala Lumpur"
     }
 
