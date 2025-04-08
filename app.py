@@ -959,11 +959,12 @@ else:
 def estimate_birth_time(sign_name, year, month, day, city):
     city_file_map = {
         "Taipei": "ascendant_ranges_Taipei.csv",
-        "Hong Kong": "ascendant_ranges_Hong_Kong.csv"
+        "Hong Kong": "ascendant_ranges_Hong_Kong.csv",
+        "Kuala Lumpur": "ascendant_ranges_Kuala_Lumpur.csv"
     }
 
     if city not in city_file_map:
-        st.error("目前僅支援『Taipei』與『Hong Kong』的出生地。")
+        st.error("目前僅支援『Taipei』、『Hong Kong』與『Kuala Lumpur』的出生地。")
         return []
 
     file_path = city_file_map[city]
@@ -993,7 +994,8 @@ def estimate_birth_time(sign_name, year, month, day, city):
 if birth_hour_option == "不知道":
     city_map = {
         "Taiwan（台灣）": "Taipei",
-        "Hong Kong（香港）": "Hong Kong"
+        "Hong Kong（香港）": "Hong Kong"，
+        "Kuala Lumpur (吉隆坡) ": "Kuala Lumpur"
     }
 
     if "city_selection" not in st.session_state:
