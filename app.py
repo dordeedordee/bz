@@ -902,7 +902,9 @@ if birth_hour_option == "不知道":
             valid_count = 0
 
             for category in ascendant_traits["白羊"].keys():
-                options = ["不知道"] + sorted(list({traits[category] for traits in ascendant_traits.values()}))
+                trait_order = ["高", "中", "低"]
+                options = trait_order + ["不知道"]
+                #options = ["不知道"] + sorted(list({traits[category] for traits in ascendant_traits.values()}))
                 choice = st.selectbox(f"請選擇符合的「{category}」特質：", options, key=category)
 
                 if choice != "不知道":
