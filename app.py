@@ -561,12 +561,20 @@ def get_bazi(year: int, month: int, day: int, hour: int):
 #                '大運': da_yun_schedule
 #            }
 
+# 節氣名稱對照表（避免使用不存在的 sxtwl.JIE_QI）
+jieqi_names = [
+    "小寒", "大寒", "立春", "雨水", "驚蟄", "春分",
+    "清明", "穀雨", "立夏", "小滿", "芒種", "夏至",
+    "小暑", "大暑", "立秋", "處暑", "白露", "秋分",
+    "寒露", "霜降", "立冬", "小雪", "大雪", "冬至"
+]
+
 def calculate_da_yun_info(birth_datetime: datetime, gender: str, ri_gan: str):
     # 查立春時間以調整出生年是否需視為前一年
     day_check = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
     while True:
         if day_check.hasJieQi():
-            if sxtwl.JIE_QI[day_check.getJieQi()] == '立春':
+            if jieqi_names[day_check.getJieQi()] == '立春':
                 spring_day = day_check
                 break
         day_check = day_check.after(-1)
