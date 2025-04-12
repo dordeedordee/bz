@@ -562,12 +562,28 @@ def get_bazi(year: int, month: int, day: int, hour: int):
 #            }
 
 def calculate_da_yun_info(birth_datetime: datetime, gender: str, ri_gan: str):
+    # 查立春時間以調整出生年是否需視為前一年
+    day_check = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
+    while True:
+        if day_check.hasJieQi():
+            if sxtwl.JIE_QI[day_check.getJieQi()] == '立春':
+                spring_day = day_check
+                break
+        day_check = day_check.after(-1)
+
+    spring_jd = spring_day.getJieQiJD()
+    spring_dt_raw = sxtwl.JD2DD(spring_jd)
+    spring_datetime = datetime(int(spring_dt_raw.Y), int(spring_dt_raw.M), int(spring_dt_raw.D), int(spring_dt_raw.h), int(spring_dt_raw.m), int(round(spring_dt_raw.s)))
+
+    # 若出生在立春之前，視為前一年
+    adjusted_year = birth_datetime.year - 1 if birth_datetime < spring_datetime else birth_datetime.year
+
+    # 判斷日干陰陽
     yang_gan = {'甲', '丙', '戊', '庚', '壬'}
     is_yang = ri_gan in yang_gan
     step = 1 if (gender == '男' and is_yang) or (gender == '女' and not is_yang) else -1
 
     day = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
-
     while True:
         day = day.after(step)
         if day.hasJieQi():
@@ -603,6 +619,7 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, ri_gan: str):
         '起運年齡（歲）': round(qi_yun_age, 1),
         '大運': da_yun_schedule
     }
+
 
 
 def count_tian_yi_gui_ren(bazi):
