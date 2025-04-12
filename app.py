@@ -566,24 +566,20 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, ri_gan: str):
     is_yang = ri_gan in yang_gan
     step = 1 if (gender == '男' and is_yang) or (gender == '女' and not is_yang) else -1
 
-    # 這裡改掉錯誤的 Lunar() 用法
     day = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
 
-    # 迴圈找節氣
     while True:
         day = day.after(step)
         if day.hasJieQi():
             jieqi_jd = day.getJieQiJD()
             t = sxtwl.JD2DD(jieqi_jd)
-            jieqi_datetime = datetime(t.Y, t.M, t.D, t.h, t.m, int(round(t.s)))
+            jieqi_datetime = datetime(int(t.Y), int(t.M), int(t.D), int(t.h), int(t.m), int(round(t.s)))
             break
 
-    # 計算天數差與起運年齡
     days_diff = (jieqi_datetime - birth_datetime).total_seconds() / 86400
     qi_yun_age = abs(days_diff) / 3
     start_year = birth_datetime.year + int(qi_yun_age)
 
-    # 起始月干支
     month_gz = day.getMonthGZ()
     tg_index = month_gz.tg
     dz_index = month_gz.dz
