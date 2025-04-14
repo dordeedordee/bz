@@ -569,7 +569,7 @@ jieqi_names = [
     "寒露", "霜降", "立冬", "小雪", "大雪", "冬至"
 ]
 
-def calculate_da_yun_info(birth_datetime: datetime, gender: str, ri_gan: str):
+def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
     # 查立春時間以調整出生年是否需視為前一年
     day_check = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
     while True:
@@ -586,9 +586,9 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, ri_gan: str):
     # 若出生在立春之前，視為前一年
     adjusted_year = birth_datetime.year - 1 if birth_datetime < spring_datetime else birth_datetime.year
 
-    # 判斷日干陰陽
+    # 判斷年干陰陽（用年干來判斷大運方向）
     yang_gan = {'甲', '丙', '戊', '庚', '壬'}
-    is_yang = ri_gan in yang_gan
+    is_yang = nian_gan in yang_gan
     step = 1 if (gender == '男' and is_yang) or (gender == '女' and not is_yang) else -1
 
     day = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
@@ -1178,8 +1178,8 @@ if st.button("分析八字"):
 
         birth_str = bazi['公曆'].replace("年", "-").replace("月", "-").replace("日", "")
         birth_datetime = datetime.strptime(birth_str.split()[0] + " " + birth_str.split()[1], "%Y-%m-%d %H:%M")
-        ri_gan = bazi['日柱'][0]
-        da_yun_info = calculate_da_yun_info(birth_datetime, gender, ri_gan)
+        nian_gan = bazi['年柱'][0]
+        da_yun_info = calculate_da_yun_info(birth_datetime, gender, nian_gan)
         st.markdown("---")
         st.markdown("### 大運: ")
 
