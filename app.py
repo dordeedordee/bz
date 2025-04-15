@@ -604,20 +604,16 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
     qi_yun_age = abs(days_diff) / 3
     start_year = birth_datetime.year + int(qi_yun_age)
 
-    month_gz = day.getMonthGZ()
-    tg_index = month_gz.tg
-    dz_index = month_gz.dz
+    birth_day = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
+    birth_month_gz = birth_day.getMonthGZ()
+    tg_index = birth_month_gz.tg
+    dz_index = birth_month_gz.dz
 
     tiangan = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
     dizhi = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
 
     da_yun_schedule = []
     for i in range(10):
-        #offset = (i + 1) * step
-        #tg = tiangan[(tg_index + offset) % 10]
-        #dz = dizhi[(dz_index + offset) % 12]
-        #tg = tiangan[(tg_index + step * (i + 1)) % 10]
-        #dz = dizhi[(dz_index + step * (i + 1)) % 12]
         if step == 1:
             tg = tiangan[(tg_index + i ) % 10]
             dz = dizhi[(dz_index + i ) % 12]
