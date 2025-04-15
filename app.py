@@ -570,7 +570,6 @@ jieqi_names = [
 ]
 
 def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
-    # 查立春時間以調整出生年是否需視為前一年
     day_check = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
     while True:
         if day_check.hasJieQi():
@@ -583,10 +582,8 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
     spring_dt_raw = sxtwl.JD2DD(spring_jd)
     spring_datetime = datetime(int(spring_dt_raw.Y), int(spring_dt_raw.M), int(spring_dt_raw.D), int(spring_dt_raw.h), int(spring_dt_raw.m), int(round(spring_dt_raw.s)))
 
-    # 若出生在立春之前，視為前一年
     adjusted_year = birth_datetime.year - 1 if birth_datetime < spring_datetime else birth_datetime.year
 
-    # 判斷年干陰陽（用年干來判斷大運方向）
     yang_gan = {'甲', '丙', '戊', '庚', '壬'}
     is_yang = nian_gan in yang_gan
     step = 1 if (gender == '男' and is_yang) or (gender == '女' and not is_yang) else -1
@@ -600,9 +597,19 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
             jieqi_datetime = datetime(int(t.Y), int(t.M), int(t.D), int(t.h), int(t.m), int(round(t.s)))
             break
 
-    days_diff = (jieqi_datetime - birth_datetime).total_seconds() / 86400
-    qi_yun_age = abs(days_diff) / 3
-    start_year = birth_datetime.year + int(qi_yun_age)
+    # 計算距離天數和時辰（1時辰 = 2小時）
+    delta = jieqi_datetime - birth_datetime
+    total_seconds = abs(delta.total_seconds())
+    total_days = int(total_seconds // 86400)
+    remaining_seconds = total_seconds % 86400
+    remaining_hours = remaining_seconds / 3600
+    shichen = int(round(remaining_hours / 2))  # 一個時辰為兩小時
+
+    # 三日為一年，一個時辰相當於10天（1/3歲）
+    total_days_equiv = total_days + shichen * 10 / 30
+    qi_yun_age = int(total_days_equiv // 3) + (1 if total_days_equiv % 3 > 0 else 0)
+
+    start_year = birth_datetime.year + qi_yun_age
 
     birth_day = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
     birth_month_gz = birth_day.getMonthGZ()
@@ -614,24 +621,24 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
 
     da_yun_schedule = []
     for i in range(10):
+        tg_offset = i + 1
+        dz_offset = i + 1
         if step == 1:
-            tg = tiangan[(tg_index + i ) % 10]
-            dz = dizhi[(dz_index + i ) % 12]
+            tg = tiangan[(tg_index + tg_offset) % 10]
+            dz = dizhi[(dz_index + dz_offset) % 12]
         else:
-            tg = tiangan[(tg_index - (i + 1)) % 10]
-            dz = dizhi[(dz_index - (i + 1)) % 12]
-        age = int(qi_yun_age) + i * 10 + 1
+            tg = tiangan[(tg_index - tg_offset + 10) % 10]
+            dz = dizhi[(dz_index - dz_offset + 12) % 12]
+        age = qi_yun_age + i * 10
         year = start_year + i * 10
         da_yun_schedule.append(f"{age}歲 ({year}) - {tg}{dz}")
 
     return {
         '大運方向': '順行' if step == 1 else '逆行',
         '節氣時間': jieqi_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-        '距離出生天數': round(days_diff, 2),
-        '起運年齡（歲）': round(qi_yun_age, 1),
+        '起運年齡（歲）': qi_yun_age,
         '大運': da_yun_schedule
     }
-
 
 
 def count_tian_yi_gui_ren(bazi):
