@@ -1053,9 +1053,9 @@ def estimate_birth_time(sign_name, year, month, day, city):
 
 
 #### uncomment the following lines to reset the session after changing the user input fields
-if st.button("重設整個應用程式"):
-    st.session_state.clear()
-    st.experimental_rerun()
+#if st.button("重設整個應用程式"):
+#    st.session_state.clear()
+#    st.experimental_rerun()
 
 if birth_hour_option == "不知道":
     city_map = {
