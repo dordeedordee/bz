@@ -586,7 +586,8 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
 
     yang_gan = {'甲', '丙', '戊', '庚', '壬'}
     is_yang = nian_gan in yang_gan
-    step = 1 if (gender == '男' and is_yang) or (gender == '女' and not is_yang) else -1
+    is_male = gender == '男'
+    step = 1 if (is_male and is_yang) or (not is_male and not is_yang) else -1
 
     day = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
     while True:
@@ -603,7 +604,7 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
     total_days = int(total_seconds // 86400)
     remaining_seconds = total_seconds % 86400
     remaining_hours = remaining_seconds / 3600
-    shichen = int(round(remaining_hours / 2))  # 一個時辰為兩小時
+    shichen = int(round(remaining_hours / 2))
 
     # 三日為一年，一個時辰相當於10天（1/3歲）
     total_days_equiv = total_days + shichen * 10 / 30
@@ -639,7 +640,6 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
         '起運年齡（歲）': qi_yun_age,
         '大運': da_yun_schedule
     }
-
 
 def count_tian_yi_gui_ren(bazi):
     day_gan = bazi["日柱"][0]  # 日干
