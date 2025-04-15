@@ -607,7 +607,6 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
     month_gz = day.getMonthGZ()
     tg_index = month_gz.tg
     dz_index = month_gz.dz
-    print(tg_index, dz_index)
 
     tiangan = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
     dizhi = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
@@ -1052,9 +1051,9 @@ def estimate_birth_time(sign_name, year, month, day, city):
 
 
 #### uncomment the following lines to reset the session after changing the user input fields
-#if st.button("重設整個應用程式"):
-#    st.session_state.clear()
-#    st.experimental_rerun()
+if st.button("重設整個應用程式"):
+    st.session_state.clear()
+    st.experimental_rerun()
 
 if birth_hour_option == "不知道":
     city_map = {
