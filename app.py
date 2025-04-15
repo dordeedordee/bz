@@ -621,8 +621,8 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
         tg_offset = i + 1
         dz_offset = i + 1
         if step == 1:
-            tg = tiangan[(tg_index + tg_offset) % 10]
-            dz = dizhi[(dz_index + dz_offset) % 12]
+            tg = tiangan[(tg_index + tg_offset + 10) % 10]
+            dz = dizhi[(dz_index + dz_offset + 12) % 12]
         else:
             tg = tiangan[(tg_index - tg_offset + 10) % 10]
             dz = dizhi[(dz_index - dz_offset + 12) % 12]
