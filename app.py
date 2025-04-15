@@ -618,14 +618,12 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
         #dz = dizhi[(dz_index + offset) % 12]
         #tg = tiangan[(tg_index + step * (i + 1)) % 10]
         #dz = dizhi[(dz_index + step * (i + 1)) % 12]
-        tg_offset = i + 1
-        dz_offset = i + 1
         if step == 1:
-            tg = tiangan[(tg_index + tg_offset + 10) % 10]
-            dz = dizhi[(dz_index + dz_offset + 12) % 12]
+            tg = tiangan[(tg_index + i ) % 10]
+            dz = dizhi[(dz_index + i ) % 12]
         else:
-            tg = tiangan[(tg_index - tg_offset + 10) % 10]
-            dz = dizhi[(dz_index - dz_offset + 12) % 12]
+            tg = tiangan[(tg_index - (i + 1)) % 10]
+            dz = dizhi[(dz_index - (i + 1)) % 12]
         age = int(qi_yun_age) + i * 10 + 1
         year = start_year + i * 10
         da_yun_schedule.append(f"{age}歲 ({year}) - {tg}{dz}")
