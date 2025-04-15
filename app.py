@@ -598,10 +598,9 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
             jieqi_datetime = datetime(int(t.Y), int(t.M), int(t.D), int(t.h), int(t.m), int(round(t.s)))
             break
 
-    # 計算距離天數和時辰（1時辰 = 2小時）
-    #delta = jieqi_datetime - birth_datetime
+    # 計算距離天數和時辰（依順逆行方向調整）
     delta = jieqi_datetime - birth_datetime if step == 1 else birth_datetime - jieqi_datetime
-    total_seconds = abs(delta.total_seconds())
+    total_seconds = delta.total_seconds()
     total_days = int(total_seconds // 86400)
     remaining_seconds = total_seconds % 86400
     remaining_hours = remaining_seconds / 3600
