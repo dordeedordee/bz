@@ -607,6 +607,7 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
     month_gz = day.getMonthGZ()
     tg_index = month_gz.tg
     dz_index = month_gz.dz
+    print(tg_index, dz_index)
 
     tiangan = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
     dizhi = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
