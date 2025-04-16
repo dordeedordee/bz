@@ -70,19 +70,40 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
     yang_gan = {'甲', '丙', '戊', '庚', '壬'}
     is_yang = nian_gan in yang_gan
     step = 1 if (gender == '男' and is_yang) or (gender == '女' and not is_yang) else -1
-
-    day = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
+    print(gender)
+    
+    # 🌟 根據陰陽性別選擇順推或逆推節氣
+    search_day = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
     while True:
-        day = day.after(step)
-        if day.hasJieQi():
-            jieqi_jd = day.getJieQiJD()
+        search_day = search_day.after(step)
+        if search_day.hasJieQi():
+            jieqi_index = search_day.getJieQi()
+            jieqi_name = jieqi_names[jieqi_index]
+            jieqi_jd = search_day.getJieQiJD()
             t = sxtwl.JD2DD(jieqi_jd)
             jieqi_datetime = datetime(int(t.Y), int(t.M), int(t.D), int(t.h), int(t.m), int(round(t.s)))
             break
 
-    days_diff = (jieqi_datetime - birth_datetime).total_seconds() / 86400
-    qi_yun_age = abs(days_diff) / 3
-    start_year = birth_datetime.year + int(qi_yun_age)
+    # 顯示取得的節氣名稱與時間
+    print(f"取得節氣名稱：{jieqi_name}")
+    print(f"節氣時間：{jieqi_datetime}")
+    
+    # 計算距離天數和時辰（1時辰 = 2小時）
+    delta = jieqi_datetime - birth_datetime if step == 1 else birth_datetime - jieqi_datetime
+    print(delta)
+    total_seconds = abs(delta.total_seconds())
+    total_days = int(total_seconds // 86400)
+    remaining_seconds = total_seconds % 86400
+    remaining_hours = remaining_seconds / 3600
+    shichen = int(round(remaining_hours / 2))
+
+    # 三日為一年，一個時辰相當於10天（1/3歲）
+    total_days_equiv = total_days + shichen * 10 / 30
+    print(total_days_equiv)
+    qi_yun_age = int(total_days_equiv // 3) + (1 if total_days_equiv % 3 > 0 else 0)
+    print(qi_yun_age)
+    
+    start_year = birth_datetime.year + qi_yun_age
 
     tiangan = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
     dizhi = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
@@ -117,8 +138,7 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
     return {
         '大運方向': '順行' if step == 1 else '逆行',
         '節氣時間': jieqi_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-        '距離出生天數': round(days_diff, 2),
-        '起運年齡（歲）': round(qi_yun_age, 1),
+        '起運年齡（歲）': qi_yun_age,
         '大運': da_yun_schedule
     }
 
@@ -171,5 +191,5 @@ birth_datetime = datetime.strptime(birth_str.split()[0] + " " + birth_str.split(
 nian_gan = bazi['年柱'][0]
 da_yun_info = calculate_da_yun_info(birth_datetime, gender, nian_gan)
 
-for line in da_yun_info['大運']:
-    print(line)
+#for line in da_yun_info['大運']:
+#    print(line)

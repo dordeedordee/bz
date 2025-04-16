@@ -600,7 +600,7 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
             break
 
     # 計算距離天數和時辰（1時辰 = 2小時）
-    delta = jieqi_datetime - birth_datetime
+    delta = jieqi_datetime - birth_datetime if step == 1 else birth_datetime - jieqi_datetime
     total_seconds = abs(delta.total_seconds())
     total_days = int(total_seconds // 86400)
     remaining_seconds = total_seconds % 86400
