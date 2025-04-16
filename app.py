@@ -589,18 +589,19 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
     is_male = gender == '男'
     step = 1 if (is_male and is_yang) or (not is_male and not is_yang) else -1
 
-    day = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
+    # 🌟 根據陰陽性別選擇順推或逆推節氣
+    search_day = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
     while True:
-        day = day.after(step)
-        if day.hasJieQi():
-            jieqi_jd = day.getJieQiJD()
+        search_day = search_day.after(step)
+        if search_day.hasJieQi():
+            jieqi_jd = search_day.getJieQiJD()
             t = sxtwl.JD2DD(jieqi_jd)
             jieqi_datetime = datetime(int(t.Y), int(t.M), int(t.D), int(t.h), int(t.m), int(round(t.s)))
             break
 
-    # 計算距離天數和時辰（依順逆行方向調整）
-    delta = jieqi_datetime - birth_datetime if step == 1 else birth_datetime - jieqi_datetime
-    total_seconds = delta.total_seconds()
+    # 計算距離天數和時辰（1時辰 = 2小時）
+    delta = jieqi_datetime - birth_datetime
+    total_seconds = abs(delta.total_seconds())
     total_days = int(total_seconds // 86400)
     remaining_seconds = total_seconds % 86400
     remaining_hours = remaining_seconds / 3600
