@@ -991,7 +991,7 @@ def find_missing_earthly_branch_for_combination(bazi):
         ("寅", "巳", "申"), ("丑", "未", "戌")
     ]
 
-    result = []
+    result = {}
 
     for group in three_combinations + three_meetings:
         matched = [zhi for zhi in group if zhi in zhi_list]
@@ -999,17 +999,15 @@ def find_missing_earthly_branch_for_combination(bazi):
             missing = [zhi for zhi in group if zhi not in matched][0]
             category = "三合局" if group in three_combinations else "三會局"
             group_str = " ".join(group)
-            result.append(f"{missing} ({category}：{group_str}）")
+            result[f"{missing}"] = f"{category}：{group_str}"
 
-    # 僅檢查三刑中缺一的情況
     for group in punish_check_only:
         matched = [zhi for zhi in group if zhi in zhi_list]
         if len(matched) == 2:
             missing = [zhi for zhi in group if zhi not in matched][0]
-            result.append(f"{missing}（三刑：{' '.join(group)}）")
+            result[f"{missing}"] = f"三刑：{' '.join(group)}"
 
     return result
-
 
 
 # --- Streamlit Interface ---
@@ -1263,8 +1261,8 @@ if st.button("分析八字"):
             st.markdown(f"<span style='color:#004488'>- {tg} {result}</span>", unsafe_allow_html=True)
             
         st.markdown("### <span style='color:#884400'>缺一地支形成三合/三會/三刑之局</span>", unsafe_allow_html=True)
-        for line in find_missing_earthly_branch_for_combination(bazi):
-            st.markdown(f"<span style='color:#884400'>- {line}</span>", unsafe_allow_html=True)
+        for zhi, description in find_missing_earthly_branch_for_combination(bazi).items():
+            st.markdown(f"<span style='color:#884400'>- {zhi} ({description})</span>", unsafe_allow_html=True)
 
         # 🟢 Section 2: 三合局、三會局
         show_section("三合局", *count_sanhe(bazi), color="#336600")
