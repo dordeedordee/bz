@@ -1010,6 +1010,29 @@ def find_missing_earthly_branch_for_combination(bazi):
     return result
 
 
+def check_chong_xing_with_day_zhi(bazi):
+    day_zhi = bazi["日柱"][1]
+
+    chong_matches = []
+    xing_matches = []
+
+    for z1, z2 in chong_relationships:
+        if day_zhi == z1:
+            chong_matches.append(z2)
+        elif day_zhi == z2:
+            chong_matches.append(z1)
+
+    for z1, z2 in xing_relationships:
+        if day_zhi == z1:
+            xing_matches.append(z2)
+        elif day_zhi == z2:
+            xing_matches.append(z1)
+
+    return {
+        "沖日支": chong_matches,
+        "刑日支": xing_matches
+    }
+
 # --- Streamlit Interface ---
 set_background("background.jpg")
 st.title("八字命盤分析器")
@@ -1260,9 +1283,14 @@ if st.button("分析八字"):
         for tg, result in check_de_lu(bazi).items():
             st.markdown(f"<span style='color:#004488'>- {tg} {result}</span>", unsafe_allow_html=True)
             
-        st.markdown("### <span style='color:#884400'>缺一地支形成三合/三會/三刑之局</span>", unsafe_allow_html=True)
+        st.markdown("### <span style='color:#884400'>半合/半會/半刑</span>", unsafe_allow_html=True)
         for zhi, description in find_missing_earthly_branch_for_combination(bazi).items():
             st.markdown(f"<span style='color:#884400'>- {zhi} ({description})</span>", unsafe_allow_html=True)
+        
+        st.markdown("### <span style='color:#aa2222'>防刑沖日支</span>", unsafe_allow_html=True)
+        for label, matches in check_chong_xing_with_day_zhi(bazi).items():
+            if matches:
+                st.markdown(f"<span style='color:#aa2222'>- {label}：{', '.join(matches)}</span>", unsafe_allow_html=True)
 
         # 🟢 Section 2: 三合局、三會局
         show_section("三合局", *count_sanhe(bazi), color="#336600")
