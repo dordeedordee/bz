@@ -1335,6 +1335,14 @@ if st.button("分析八字"):
             for label in labels
         ]) + "</div>", unsafe_allow_html=True)
 
+        # Row 5: 藏干（垂直顯示在地支十神之下）
+        st.markdown("<div class='bazi-row'>" + "".join([
+            f"<div class='bazi-cell' style='font-size:18px; color:gray; line-height:1.2'>"
+            f"{'<br>'.join(cang_gan_map.get(bazi[label][1], []))}"
+            f"</div>"
+            for label in labels
+        ]) + "</div>", unsafe_allow_html=True)
+        
         birth_str = bazi['公曆'].replace("年", "-").replace("月", "-").replace("日", "")
         birth_datetime = datetime.strptime(birth_str.split()[0] + " " + birth_str.split()[1], "%Y-%m-%d %H:%M")
         nian_gan = bazi['年柱'][0]
