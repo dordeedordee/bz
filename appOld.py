@@ -1191,198 +1191,161 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# =========================
-# 新增：輸入模式切換
-# =========================
-input_mode = st.radio(
-    "請選擇輸入方式：",
-    ["輸入出生資料（可計算大運）", "直接輸入八字（不計算大運）"],
-    horizontal=True
-)
 
-# 共用：性別（兩種模式都需要）
+
+st.markdown("請輸入出生時間：")
+
+
+
+# 👇 User inputs
+
 gender = st.selectbox("性別：", ["男", "女"])
+birth_year = st.number_input("年份", min_value=1900, max_value=2100, value=1977)
+birth_month = st.number_input("月份", min_value=1, max_value=12, value=7)
+birth_day = st.number_input("日期", min_value=1, max_value=31, value=7)
+birth_hour_option = st.selectbox("時辰（24小時制）", [f"{i}" for i in range(24)] + ["不知道"])
 
-# 先給 default 值，避免後面引用時未定義
-birth_year = birth_month = birth_day = None
-birth_hour = None
-bazi_text = None
-
-# =========================
-# 模式 A：出生資料
-# =========================
-if input_mode == "輸入出生資料（可計算大運）":
-    st.markdown("請輸入出生時間：")
-
-    birth_year = st.number_input("年份", min_value=1900, max_value=2100, value=1977)
-    birth_month = st.number_input("月份", min_value=1, max_value=12, value=7)
-    birth_day = st.number_input("日期", min_value=1, max_value=31, value=7)
-    birth_hour_option = st.selectbox("時辰（24小時制）", [f"{i}" for i in range(24)] + ["不知道"])
-
-    if birth_hour_option != "不知道":
-        birth_hour = int(birth_hour_option)
-    else:
-        birth_hour = None
-
-    def estimate_birth_time(sign_name, year, month, day, city):
-        city_file_map = {
-            "Taipei": "ascendant_ranges_Taipei.csv",
-            "Hong Kong": "ascendant_ranges_Hong_Kong.csv",
-            "Kuala Lumpur": "ascendant_ranges_Kuala_Lumpur.csv"
-        }
-
-        if city not in city_file_map:
-            st.error("目前僅支援『Taipei』、『Hong Kong』與『Kuala Lumpur』的出生地。")
-            return []
-
-        file_path = city_file_map[city]
-
-        try:
-            df = pd.read_csv(file_path)
-        except Exception as e:
-            st.error(f"無法載入資料檔案：{e}")
-            return []
-
-        date_str = f"{year:04d}-{month:02d}-{day:02d}"
-        df_day = df[df["Date"] == date_str]
-        df_sign = df_day[df_day["Sign"] == sign_name]
-
-        if df_sign.empty:
-            st.warning("找不到該日與星座對應的時間範圍。")
-            return []
-
-        return list(zip(df_sign["Start"], df_sign["End"]))
-
-    # 若時辰不知道：沿用你原本的上升推算流程
-    if birth_hour_option == "不知道":
-        city_map = {
-            "Taiwan（台灣）": "Taipei",
-            "Hong Kong（香港）": "Hong Kong",
-            "Kuala Lumpur (吉隆坡) ": "Kuala Lumpur"
-        }
-
-        if "city_selection" not in st.session_state:
-            st.session_state["city_selection"] = "Hong Kong（香港）"
-
-        city_selection = st.selectbox(
-            "請選擇出生地區：",
-            list(city_map.keys()),
-            index=list(city_map.keys()).index(st.session_state["city_selection"]),
-            key="city_selection"
-        )
-
-        city = city_map[city_selection]
-
-        if city:
-            if "selected_signs" not in st.session_state:
-                st.session_state["selected_signs"] = {}
-            if "trigger_zodiac" not in st.session_state:
-                st.session_state["trigger_zodiac"] = False
-            if "trigger_time_range" not in st.session_state:
-                st.session_state["trigger_time_range"] = False
-
-            if st.button("重設特質"):
-                st.session_state["selected_signs"] = {}
-                st.session_state["trigger_zodiac"] = False
-                st.session_state["trigger_time_range"] = False
-                for key in ascendant_traits["白羊"].keys():
-                    st.session_state.pop(key, None)
-
-            if not st.session_state["trigger_zodiac"]:
-                st.subheader("依據外貌與性格推測上升星座")
-                selected_signs = {}
-                valid_count = 0
-
-                for category in ascendant_traits["白羊"].keys():
-                    trait_order = ["高", "中", "低"]
-                    options = trait_order + ["不知道"]
-                    choice = st.selectbox(f"請選擇符合的「{category}」特質：", options, key=category)
-
-                    if choice != "不知道":
-                        selected_signs[category] = choice
-                        valid_count += 1
-
-                if st.button("推算星座"):
-                    if valid_count == 0:
-                        st.warning("由於您所有特質皆選擇『不知道』，無法推算上升星座。")
-                    else:
-                        st.session_state["selected_signs"] = selected_signs
-                        st.session_state["trigger_zodiac"] = True
-                        for key in ascendant_traits["白羊"].keys():
-                            st.session_state.pop(key, None)
-
-            if st.session_state["trigger_zodiac"]:
-                trait_scale = {"高": 2, "中": 1, "低": 0}
-                scores = {}
-                user_traits = st.session_state["selected_signs"]
-
-                for sign, traits in ascendant_traits.items():
-                    distance = 0
-                    for category, user_value in user_traits.items():
-                        sign_value = traits.get(category)
-                        if sign_value is not None and user_value in trait_scale:
-                            distance += abs(trait_scale[sign_value] - trait_scale[user_value])
-                    scores[sign] = distance
-
-                best_match = min(scores.items(), key=lambda x: x[1])[0]
-                st.code(f"最可能的上升星座為：{best_match}")
-
-                if not st.session_state["trigger_time_range"]:
-                    if st.button("推算可能出生時段"):
-                        st.session_state["trigger_time_range"] = True
-
-            if st.session_state["trigger_time_range"]:
-                ranges = estimate_birth_time(best_match, birth_year, birth_month, birth_day, city)
-                if ranges:
-                    st.subheader("根據推測，以下是可能的出生時間段：")
-                    time_options = []
-                    for start, end in ranges:
-                        st.code(f"{start} - {end}")
-                        for h in range(int(start.split(":")[0]), int(end.split(":")[0]) + 1):
-                            if 0 <= h <= 23:
-                                time_options.append(h)
-                    birth_hour = st.selectbox("請從上述推估中選擇最符合的時辰：", sorted(set(time_options)), key="final_hour")
-                else:
-                    st.warning("無法根據該城市與日期找到對應的出生時段。")
-
-# =========================
-# 模式 B：直接輸入八字（不計算大運）
-# =========================
+if birth_hour_option != "不知道":
+    birth_hour = int(birth_hour_option)
 else:
-    st.markdown("請直接輸入八字（年、月、日、時四柱）：")
-    bazi_text = st.text_input(
-        "八字（例如：辛卯 丁酉 庚午 丙子 或 年辛卯 月丁酉 日庚午 時丙子）",
-        value="",
-        placeholder="例如：辛卯 丁酉 庚午 丙子"
-    )
-    st.caption("提示：此模式不計算大運（因大運需公曆出生日期時間）。")
+    birth_hour = None
 
-# =========================
-# 共用：分析按鈕
-# =========================
-if st.button("分析八字"):
+def estimate_birth_time(sign_name, year, month, day, city):
+    city_file_map = {
+        "Taipei": "ascendant_ranges_Taipei.csv",
+        "Hong Kong": "ascendant_ranges_Hong_Kong.csv",
+        "Kuala Lumpur": "ascendant_ranges_Kuala_Lumpur.csv"
+    }
+
+    if city not in city_file_map:
+        st.error("目前僅支援『Taipei』、『Hong Kong』與『Kuala Lumpur』的出生地。")
+        return []
+
+    file_path = city_file_map[city]
+
     try:
-        # 先依輸入模式取得 bazi
-        if input_mode == "輸入出生資料（可計算大運）":
-            if birth_hour is None:
-                st.warning("你目前未提供時辰（或尚未從推估中選定時辰）。若要計算八字與大運，請先選定時辰。")
-                st.stop()
+        df = pd.read_csv(file_path)
+    except Exception as e:
+        st.error(f"無法載入資料檔案：{e}")
+        return []
 
-            bazi = get_bazi(birth_year, birth_month, birth_day, birth_hour)
+    date_str = f"{year:04d}-{month:02d}-{day:02d}"
+    df_day = df[df["Date"] == date_str]
+    df_sign = df_day[df_day["Sign"] == sign_name]
 
-        else:
-            if not bazi_text or not bazi_text.strip():
-                st.warning("請先輸入八字四柱。")
-                st.stop()
+    if df_sign.empty:
+        st.warning("找不到該日與星座對應的時間範圍。")
+        return []
 
-            # 你已新增的 parser（使用你既有 tian_gan / di_zhi vectors）
-            bazi = parse_bazi_text(bazi_text, tian_gan, di_zhi)
+    return list(zip(df_sign["Start"], df_sign["End"]))
 
-        # =========================
-        # 命盤顯示（共用）
-        # =========================
+
+#### uncomment the following lines to reset the session after changing the user input fields
+#if st.button("重設整個應用程式"):
+#    st.session_state.clear()
+#    st.experimental_rerun()
+
+if birth_hour_option == "不知道":
+    city_map = {
+        "Taiwan（台灣）": "Taipei",
+        "Hong Kong（香港）": "Hong Kong",
+        "Kuala Lumpur (吉隆坡) ": "Kuala Lumpur"
+    }
+
+    if "city_selection" not in st.session_state:
+        st.session_state["city_selection"] = "Hong Kong（香港）"
+
+    city_selection = st.selectbox(
+        "請選擇出生地區：",
+        list(city_map.keys()),
+        index=list(city_map.keys()).index(st.session_state["city_selection"]),
+        key="city_selection"
+    )
+    
+    city = city_map[city_selection]  
+    
+    if city:
+        if "selected_signs" not in st.session_state:
+            st.session_state["selected_signs"] = {}
+        if "trigger_zodiac" not in st.session_state:
+            st.session_state["trigger_zodiac"] = False
+        if "trigger_time_range" not in st.session_state:
+            st.session_state["trigger_time_range"] = False
+
+        if st.button("重設特質"):
+            st.session_state["selected_signs"] = {}
+            st.session_state["trigger_zodiac"] = False
+            st.session_state["trigger_time_range"] = False
+            for key in ascendant_traits["白羊"].keys():  # 移除所有特質的選擇
+                st.session_state.pop(key, None)
+
+        if not st.session_state["trigger_zodiac"]:
+            st.subheader("依據外貌與性格推測上升星座")
+            selected_signs = {}
+            valid_count = 0
+
+            for category in ascendant_traits["白羊"].keys():
+                trait_order = ["高", "中", "低"]
+                options = trait_order + ["不知道"]
+                #options = ["不知道"] + sorted(list({traits[category] for traits in ascendant_traits.values()}))
+                choice = st.selectbox(f"請選擇符合的「{category}」特質：", options, key=category)
+
+                if choice != "不知道":
+                    selected_signs[category] = choice
+                    valid_count += 1
+
+            if st.button("推算星座"):
+                if valid_count == 0:
+                    st.warning("由於您所有特質皆選擇『不知道』，無法推算上升星座。")
+                else:
+                    st.session_state["selected_signs"] = selected_signs
+                    st.session_state["trigger_zodiac"] = True
+                    for key in ascendant_traits["白羊"].keys():
+                        st.session_state.pop(key, None)
+
+        if st.session_state["trigger_zodiac"]:
+            trait_scale = {"高": 2, "中": 1, "低": 0}
+
+            scores = {}
+            user_traits = st.session_state["selected_signs"]
+
+            for sign, traits in ascendant_traits.items():
+                distance = 0
+                for category, user_value in user_traits.items():
+                    sign_value = traits.get(category)
+                    if sign_value is not None and user_value in trait_scale:
+                        distance += abs(trait_scale[sign_value] - trait_scale[user_value])
+                scores[sign] = distance
+
+            # 選出曼哈頓距離最小的星座
+            best_match = min(scores.items(), key=lambda x: x[1])[0]
+            st.code(f"最可能的上升星座為：{best_match}")
+
+            if not st.session_state["trigger_time_range"]:
+                if st.button("推算可能出生時段"):
+                    st.session_state["trigger_time_range"] = True
+
+        if st.session_state["trigger_time_range"]:
+            ranges = estimate_birth_time(best_match, birth_year, birth_month, birth_day, city)
+            if ranges:
+                st.subheader("根據推測，以下是可能的出生時間段：")
+                time_options = []
+                for start, end in ranges:
+                    st.code(f"{start} - {end}")
+                    for h in range(int(start.split(":")[0]), int(end.split(":")[0]) + 1):
+                        if 0 <= h <= 23:
+                            time_options.append(h)
+                birth_hour = st.selectbox("請從上述推估中選擇最符合的時辰：", sorted(set(time_options)), key="final_hour")
+            else:
+                st.warning("無法根據該城市與日期找到對應的出生時段。")
+
+
+if st.button("分析八字"):
+#if analysis_ready and birth_hour is not None and st.button("分析八字"):
+    try:
+        bazi = get_bazi(birth_year, birth_month, birth_day, birth_hour)
         st.markdown("### 八字命盤")
-        st.markdown(f"**公曆出生時間：** {bazi.get('公曆', '（未提供）')}")
+        st.markdown(f"**公曆出生時間：** {bazi['公曆']}")
 
         labels = ["時柱", "日柱", "月柱", "年柱"]
         day_gan = bazi["日柱"][0]
@@ -1418,30 +1381,17 @@ if st.button("分析八字"):
             f"</div>"
             for label in labels
         ]) + "</div>", unsafe_allow_html=True)
-
-        # =========================
-        # 大運：只在出生資料模式計算
-        # =========================
+        
+        birth_str = bazi['公曆'].replace("年", "-").replace("月", "-").replace("日", "")
+        birth_datetime = datetime.strptime(birth_str.split()[0] + " " + birth_str.split()[1], "%Y-%m-%d %H:%M")
+        nian_gan = bazi['年柱'][0]
+        da_yun_info = calculate_da_yun_info(birth_datetime, gender, nian_gan)
         st.markdown("---")
         st.markdown("### 大運: ")
 
-        if input_mode == "輸入出生資料（可計算大運）":
-            birth_str = bazi["公曆"].replace("年", "-").replace("月", "-").replace("日", "")
-            birth_datetime = datetime.strptime(
-                birth_str.split()[0] + " " + birth_str.split()[1],
-                "%Y-%m-%d %H:%M"
-            )
-            nian_gan = bazi["年柱"][0]
-            da_yun_info = calculate_da_yun_info(birth_datetime, gender, nian_gan)
-
-            for line in da_yun_info["大運"]:
-                st.markdown(f"- {line}")
-        else:
-            st.info("此模式為『直接輸入八字』，不計算大運。")
-
-        # =========================
-        # 下面全部分析段落：共用（照你原本）
-        # =========================
+        for line in da_yun_info['大運']:
+            st.markdown(f"- {line}")
+        
         def show_section(title, count, matches, color=None):
             if color:
                 st.markdown(f"<h3 style='color:{color}'>{title} 數量: {count}</h3>", unsafe_allow_html=True)
@@ -1471,11 +1421,11 @@ if st.button("分析八字"):
         st.markdown("### <span style='color:#004488'>天干得祿</span>", unsafe_allow_html=True)
         for tg, result in check_de_lu(bazi).items():
             st.markdown(f"<span style='color:#004488'>- {tg} {result}</span>", unsafe_allow_html=True)
-
+            
         st.markdown("### <span style='color:#884400'>半合/半會/半刑</span>", unsafe_allow_html=True)
         for zhi, description in find_missing_earthly_branch_for_combination(bazi).items():
             st.markdown(f"<span style='color:#884400'>- {zhi} ({description})</span>", unsafe_allow_html=True)
-
+        
         st.markdown("### <span style='color:#aa2222'>防刑沖日支</span>", unsafe_allow_html=True)
         for label, matches in check_chong_xing_with_day_zhi(bazi).items():
             if matches:
@@ -1511,9 +1461,9 @@ if st.button("分析八字"):
             ("天喜桃花", count_tianxi_taohua),
             ("咸池桃花", count_xianchi_taohua),
             ("紅艷桃花", count_hongyan_taohua),
-            # ("沐浴桃花", count_muyu_taohua),
+            #("沐浴桃花", count_muyu_taohua),
         ]:
             show_section(title, *func(bazi), color="#444444")
-
+    
     except Exception as e:
         st.error(f"發生錯誤：{e}")
