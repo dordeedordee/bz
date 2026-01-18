@@ -18,7 +18,6 @@ import pytz
 import random
 from geopy.geocoders import Nominatim
 
-st.caption("Deployed version: 2026-01-17 23:59 CST (commit test)")
 
 # ========== 上升星座特徵資料庫 ==========
 ascendant_traits = {
@@ -1142,6 +1141,7 @@ st.markdown("""
     margin-bottom: 1rem;
 }
 .bazi-cell {
+    color: #222222;   /* 強制使用深色，避免白字 */
     text-align: center;
     min-width: 80px;
 }
