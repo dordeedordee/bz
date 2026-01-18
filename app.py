@@ -568,46 +568,7 @@ def get_bazi(year: int, month: int, day: int, hour: int):
     print("\n")
     return bazi
 
-#def get_bazi(year: int, month: int, day: int, hour: int):
-#    day_data = sxtwl.fromSolar(year, month, day)  # 轉換為農曆對象#
-#
-#    # 計算年柱（立春為界）
-#    yTG = day_data.getYearGZ()  # 以立春為界的年干支
-#    year_gan = tian_gan[yTG.tg]
-#    year_zhi = di_zhi[yTG.dz]
 
-#    # 計算月柱
-#    mTG = day_data.getMonthGZ()
-#    month_gan = tian_gan[mTG.tg]
-#    month_zhi = di_zhi[mTG.dz]
-
-#    # 計算日柱
-#    dTG = day_data.getDayGZ()
-#    day_gan = tian_gan[dTG.tg]
-#    day_zhi = di_zhi[dTG.dz]
-
-    # 計算時柱
-#    sTG = day_data.getHourGZ(hour)
-#    hour_gan = tian_gan[sTG.tg]
-#    hour_zhi = di_zhi[sTG.dz]
-
-#    bazi = {
-#        "公曆": f"{day_data.getSolarYear()}年{day_data.getSolarMonth()}月{day_data.getSolarDay()}日 {hour}:00",
-#        "年柱": (year_gan, year_zhi),
-#        "月柱": (month_gan, month_zhi),
-#        "日柱": (day_gan, day_zhi),
-#        "時柱": (hour_gan, hour_zhi)
-#    }
-    
-#    print(f"\n")
-#    print(f"公曆出生日期: {bazi['公曆']}")
-#    print("時 日 月 年")
-#    print(f"{shishen_table[day_gan][bazi['時柱'][0]]} 元 {shishen_table[day_gan][bazi['月柱'][0]]} {shishen_table[day_gan][bazi['年柱'][0]]} ")
-#    print(f"{bazi['時柱'][0]} {bazi['日柱'][0]} {bazi['月柱'][0]} {bazi['年柱'][0]}")
-#    print(f"{bazi['時柱'][1]} {bazi['日柱'][1]} {bazi['月柱'][1]} {bazi['年柱'][1]}")
-#    print(f"{dizhi_shishen_table[day_gan][bazi['時柱'][1]]} {dizhi_shishen_table[day_gan][bazi['日柱'][1]]} {dizhi_shishen_table[day_gan][bazi['月柱'][1]]} {dizhi_shishen_table[day_gan][bazi['年柱'][1]]} ")
-#    print(f"\n")
-#    return bazi
 
 
 #def calculate_da_yun_info(birth_datetime: datetime, gender: str, ri_gan: str):
@@ -1128,9 +1089,32 @@ def check_chong_xing_with_day_zhi(bazi):
 set_background("background.jpg")
 st.title("八字命盤分析器")
 
+# 1) 全域字色覆蓋（避免白字，但保留你手動指定的彩色 section 標題）
 st.markdown("""
 <style>
-/* Prevent Streamlit columns from stacking */
+div[data-testid="stMarkdownContainer"] p,
+div[data-testid="stMarkdownContainer"] li {
+    color: #222222 !important;
+}
+
+div[data-testid="stMarkdownContainer"] h1:not([style]),
+div[data-testid="stMarkdownContainer"] h2:not([style]),
+div[data-testid="stMarkdownContainer"] h3:not([style]),
+div[data-testid="stMarkdownContainer"] h4:not([style]),
+div[data-testid="stMarkdownContainer"] h5:not([style]),
+div[data-testid="stMarkdownContainer"] h6:not([style]) {
+    color: #222222 !important;
+}
+
+.stApp h1:not([style]) {
+    color: #222222 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# 2) 你的八字排版 CSS（照舊）
+st.markdown("""
+<style>
 .bazi-row {
     display: flex !important;
     flex-direction: row !important;
@@ -1141,12 +1125,13 @@ st.markdown("""
     margin-bottom: 1rem;
 }
 .bazi-cell {
-    color: #222222;   /* 強制使用深色，避免白字 */
+    color: #222222;
     text-align: center;
     min-width: 80px;
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 
 st.markdown("請輸入出生時間：")
