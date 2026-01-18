@@ -17,6 +17,7 @@ import pandas as pd
 import pytz
 import random
 from geopy.geocoders import Nominatim
+import re
 
 
 # ========== 上升星座特徵資料庫 ==========
