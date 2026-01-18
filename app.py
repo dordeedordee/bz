@@ -477,46 +477,129 @@ dizhi_shishen_table = {
     "癸": {"子": "劫", "丑": "殺", "寅": "傷", "卯": "食", "辰": "官", "巳": "才", "午": "財", "未": "殺", "申": "枭", "酉": "印", "戌": "官", "亥": "比"}
 }
 
+
+# Assuming you have your mappings defined (tian_gan, di_zhi, shishen_table, etc.)
+# Additional mapping for Hidden Stems (藏干)
+canggan_table = {
+    "子": ["癸"], "丑": ["己", "癸", "辛"], "寅": ["甲", "丙", "戊"], "卯": ["乙"],
+    "辰": ["戊", "乙", "癸"], "巳": ["丙", "庚", "戊"], "午": ["丁", "己"], "未": ["己", "丁", "乙"],
+    "申": ["庚", "壬", "戊"], "酉": ["辛"], "戌": ["戊", "辛", "丁"], "亥": ["壬", "甲"]
+}
+
 def get_bazi(year: int, month: int, day: int, hour: int):
-    day_data = sxtwl.fromSolar(year, month, day)  # 轉換為農曆對象
-
-    # 計算年柱（立春為界）
-    yTG = day_data.getYearGZ()  # 以立春為界的年干支
-    year_gan = tian_gan[yTG.tg]
-    year_zhi = di_zhi[yTG.dz]
-
-    # 計算月柱
+    day_data = sxtwl.fromSolar(year, month, day)
+    
+    # Pillar Calculation
+    yTG = day_data.getYearGZ()
+    year_gan, year_zhi = tian_gan[yTG.tg], di_zhi[yTG.dz]
+    
     mTG = day_data.getMonthGZ()
-    month_gan = tian_gan[mTG.tg]
-    month_zhi = di_zhi[mTG.dz]
-
-    # 計算日柱
+    month_gan, month_zhi = tian_gan[mTG.tg], di_zhi[mTG.dz]
+    
     dTG = day_data.getDayGZ()
-    day_gan = tian_gan[dTG.tg]
-    day_zhi = di_zhi[dTG.dz]
-
-    # 計算時柱
+    day_gan, day_zhi = tian_gan[dTG.tg], di_zhi[dTG.dz]
+    
     sTG = day_data.getHourGZ(hour)
-    hour_gan = tian_gan[sTG.tg]
-    hour_zhi = di_zhi[sTG.dz]
+    hour_gan, hour_zhi = tian_gan[sTG.tg], di_zhi[sTG.dz]
 
     bazi = {
         "公曆": f"{day_data.getSolarYear()}年{day_data.getSolarMonth()}月{day_data.getSolarDay()}日 {hour}:00",
-        "年柱": (year_gan, year_zhi),
-        "月柱": (month_gan, month_zhi),
-        "日柱": (day_gan, day_zhi),
-        "時柱": (hour_gan, hour_zhi)
+        "年柱": (year_gan, year_zhi), "月柱": (month_gan, month_zhi),
+        "日柱": (day_gan, day_zhi), "時柱": (hour_gan, hour_zhi)
     }
+
+    # Display Output
+    print(f"\n公曆出生日期: {bazi['公曆']}")
+    print("-" * 20)
+    print("時    日    月    年")
     
-    print(f"\n")
-    print(f"公曆出生日期: {bazi['公曆']}")
-    print("時 日 月 年")
-    print(f"{shishen_table[day_gan][bazi['時柱'][0]]} 元 {shishen_table[day_gan][bazi['月柱'][0]]} {shishen_table[day_gan][bazi['年柱'][0]]} ")
-    print(f"{bazi['時柱'][0]} {bazi['日柱'][0]} {bazi['月柱'][0]} {bazi['年柱'][0]}")
-    print(f"{bazi['時柱'][1]} {bazi['日柱'][1]} {bazi['月柱'][1]} {bazi['年柱'][1]}")
-    print(f"{dizhi_shishen_table[day_gan][bazi['時柱'][1]]} {dizhi_shishen_table[day_gan][bazi['日柱'][1]]} {dizhi_shishen_table[day_gan][bazi['月柱'][1]]} {dizhi_shishen_table[day_gan][bazi['年柱'][1]]} ")
-    print(f"\n")
+    # 1. Top Row: Heavenly Stem Ten Gods
+    ts_shishen = [
+        shishen_table[day_gan][bazi['時柱'][0]],
+        "元",
+        shishen_table[day_gan][bazi['月柱'][0]],
+        shishen_table[day_gan][bazi['年柱'][0]]
+    ]
+    print(f"{ts_shishen[0]:<3} {ts_shishen[1]:<3} {ts_shishen[2]:<3} {ts_shishen[3]:<3}")
+
+    # 2. Middle Row: Heavenly Stems
+    print(f"{bazi['時柱'][0]:<4} {bazi['日柱'][0]:<4} {bazi['月柱'][0]:<4} {bazi['年柱'][0]:<4}")
+
+    # 3. Middle Row: Earthly Branches
+    print(f"{bazi['時柱'][1]:<4} {bazi['日柱'][1]:<4} {bazi['月柱'][1]:<4} {bazi['年柱'][1]:<4}")
+
+    # 4. Earthly Branch Main Shishen
+    dz_shishen = [
+        dizhi_shishen_table[day_gan][bazi['時柱'][1]],
+        dizhi_shishen_table[day_gan][bazi['日柱'][1]],
+        dizhi_shishen_table[day_gan][bazi['月柱'][1]],
+        dizhi_shishen_table[day_gan][bazi['年柱'][1]]
+    ]
+    print(f"{dz_shishen[0]:<3} {dz_shishen[1]:<3} {dz_shishen[2]:<3} {dz_shishen[3]:<3}")
+    
+    print("-" * 20)
+    print("藏干及十神:")
+    
+    # 5. Hidden Stems (Cang Gan) and their Shishen
+    pillars = ['時柱', '日柱', '月柱', '年柱']
+    # Most branches have up to 3 hidden stems, we iterate up to 3 times
+    for i in range(3):
+        row_str = ""
+        for p in pillars:
+            branch = bazi[p][1]
+            hidden_list = canggan_table.get(branch, [])
+            if i < len(hidden_list):
+                stem = hidden_list[i]
+                shishen = shishen_table[day_gan][stem]
+                row_str += f"{stem}({shishen})  "
+            else:
+                row_str += "        " # Empty space for alignment
+        if row_str.strip(): # Only print if there's content
+            print(row_str)
+
+    print("\n")
     return bazi
+
+#def get_bazi(year: int, month: int, day: int, hour: int):
+#    day_data = sxtwl.fromSolar(year, month, day)  # 轉換為農曆對象#
+#
+#    # 計算年柱（立春為界）
+#    yTG = day_data.getYearGZ()  # 以立春為界的年干支
+#    year_gan = tian_gan[yTG.tg]
+#    year_zhi = di_zhi[yTG.dz]
+
+#    # 計算月柱
+#    mTG = day_data.getMonthGZ()
+#    month_gan = tian_gan[mTG.tg]
+#    month_zhi = di_zhi[mTG.dz]
+
+#    # 計算日柱
+#    dTG = day_data.getDayGZ()
+#    day_gan = tian_gan[dTG.tg]
+#    day_zhi = di_zhi[dTG.dz]
+
+    # 計算時柱
+#    sTG = day_data.getHourGZ(hour)
+#    hour_gan = tian_gan[sTG.tg]
+#    hour_zhi = di_zhi[sTG.dz]
+
+#    bazi = {
+#        "公曆": f"{day_data.getSolarYear()}年{day_data.getSolarMonth()}月{day_data.getSolarDay()}日 {hour}:00",
+#        "年柱": (year_gan, year_zhi),
+#        "月柱": (month_gan, month_zhi),
+#        "日柱": (day_gan, day_zhi),
+#        "時柱": (hour_gan, hour_zhi)
+#    }
+    
+#    print(f"\n")
+#    print(f"公曆出生日期: {bazi['公曆']}")
+#    print("時 日 月 年")
+#    print(f"{shishen_table[day_gan][bazi['時柱'][0]]} 元 {shishen_table[day_gan][bazi['月柱'][0]]} {shishen_table[day_gan][bazi['年柱'][0]]} ")
+#    print(f"{bazi['時柱'][0]} {bazi['日柱'][0]} {bazi['月柱'][0]} {bazi['年柱'][0]}")
+#    print(f"{bazi['時柱'][1]} {bazi['日柱'][1]} {bazi['月柱'][1]} {bazi['年柱'][1]}")
+#    print(f"{dizhi_shishen_table[day_gan][bazi['時柱'][1]]} {dizhi_shishen_table[day_gan][bazi['日柱'][1]]} {dizhi_shishen_table[day_gan][bazi['月柱'][1]]} {dizhi_shishen_table[day_gan][bazi['年柱'][1]]} ")
+#    print(f"\n")
+#    return bazi
 
 
 #def calculate_da_yun_info(birth_datetime: datetime, gender: str, ri_gan: str):
