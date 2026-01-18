@@ -18,6 +18,8 @@ import pytz
 import random
 from geopy.geocoders import Nominatim
 
+st.caption("Deployed version: 2026-01-17 23:59 CST (commit test)")
+
 # ========== 上升星座特徵資料庫 ==========
 ascendant_traits = {
     "白羊": {
