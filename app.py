@@ -1551,28 +1551,19 @@ if st.button("分析八字"):
         st.markdown(f"<h3 style='color:{YANGREN_COLOR}'>羊刃</h3>", unsafe_allow_html=True)
         yangren_res = find_yangren(bazi)  # 你先前新增的函式
 
-        st.markdown(
-            f"<span style='color:{YANGREN_COLOR}'>- 日干：{yangren_res['日干']}</span>",
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            f"<span style='color:{YANGREN_COLOR}'>- 羊刃地支：{yangren_res['羊刃地支']}</span>",
-            unsafe_allow_html=True
-        )
-
         hits = yangren_res.get("命盤羊刃落點", [])
         if hits:
             for h in hits:
                 # 若羊刃落在月柱，特別標示「羊刃格成立」
                 if h["柱"] == "月柱":
                     st.markdown(
-                        f"<span style='color:{YANGREN_COLOR}'>- 命中：{h['柱']}（{h['地支']}）"
+                        f"<span style='color:{YANGREN_COLOR}'>- {h['柱']}（{h['地支']}）"
                         f" <b style='color:{YANGREN_COLOR}'>【羊刃格成立】</b></span>",
                         unsafe_allow_html=True
                     )
                 else:
                     st.markdown(
-                        f"<span style='color:{YANGREN_COLOR}'>- 命中：{h['柱']}（{h['地支']}）</span>",
+                        f"<span style='color:{YANGREN_COLOR}'>- {h['柱']}（{h['地支']}）</span>",
                         unsafe_allow_html=True
                     )
         else:
