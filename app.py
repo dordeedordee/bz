@@ -498,6 +498,21 @@ cang_gan_map = {
 }
 
 
+# 日干羊刃（帝旺）對應地支
+yangren_map = {
+    "甲": "卯",
+    "乙": "寅",
+    "丙": "午",
+    "丁": "巳",
+    "戊": "午",
+    "己": "巳",
+    "庚": "酉",
+    "辛": "申",
+    "壬": "子",
+    "癸": "亥",
+}
+
+
 def get_bazi(year: int, month: int, day: int, hour: int):
     day_data = sxtwl.fromSolar(year, month, day)  # 轉換為農曆對象
 
@@ -622,6 +637,7 @@ jieqi_names = [
     "寒露", "霜降", "立冬", "小雪", "大雪", "冬至"
 ]
 
+
 def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
     day_check = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
     while True:
@@ -695,6 +711,48 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
         '大運': da_yun_schedule
     }
 
+
+def find_yangren(bazi: dict):
+    """
+    根據 get_bazi() 的輸出 bazi（dict），判斷四柱地支是否出現「日干羊刃」。
+    - 同時涵蓋陽干、陰干（羊刃取日干之帝旺位）
+    - 回傳：命中的羊刃落點（柱名、地支、目標羊刃地支）
+    - 若羊刃落在月柱，標記「羊刃格成立」
+    """
+
+
+    if not isinstance(bazi, dict) or "日柱" not in bazi:
+        raise ValueError("find_yangren() 需要 get_bazi() 回傳的 bazi dict，且必須包含 '日柱'。")
+
+    day_gan = bazi["日柱"][0]
+    if day_gan not in yangren_map:
+        raise ValueError(f"無法識別日干：{day_gan}（預期為：甲乙丙丁戊己庚辛壬癸）")
+
+    target_zhi = yangren_map[day_gan]
+
+    # 依你 get_bazi() 的鍵名
+    pillars = ["年柱", "月柱", "日柱", "時柱"]
+
+    hits = []
+    yangren_ge = False
+
+    for p in pillars:
+        if p not in bazi or not isinstance(bazi[p], (tuple, list)) or len(bazi[p]) < 2:
+            continue
+        zhi = bazi[p][1]
+        if zhi == target_zhi:
+            hits.append({"柱": p, "地支": zhi, "日干羊刃": target_zhi})
+            if p == "月柱":
+                yangren_ge = True
+
+    return {
+        "日干": day_gan,
+        "羊刃地支": target_zhi,
+        "命盤羊刃落點": hits,          # 可能多處同時命中
+        "羊刃格成立": yangren_ge,      # 羊刃在月支
+    }
+
+
 def count_tian_yi_gui_ren(bazi):
     day_gan = bazi["日柱"][0]  # 日干
     year_gan = bazi["年柱"][0]  # 年干
@@ -719,6 +777,10 @@ def count_tian_yi_gui_ren(bazi):
             matches.append(f"年干 {year_gan} - {pillar_label}支 {zhi}")
     
     return count, matches
+
+
+
+
 
 def count_taiji_gui_ren(bazi):
     day_gan = bazi["日柱"][0]  # 日干
@@ -1087,10 +1149,6 @@ def check_chong_xing_with_day_zhi(bazi):
     }
 
 
-
-# 你原本已經有：
-# tian_gan = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"]
-# di_zhi   = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"]
 
 def parse_bazi_text(text: str, tian_gan: list, di_zhi: list):
     """
@@ -1486,6 +1544,43 @@ if st.button("分析八字"):
         show_section("三合局", *count_sanhe(bazi), color="#336600")
         show_section("三會局", *count_sanhui(bazi), color="#336600")
 
+        # 🟣 Section 2.5: 羊刃（新增；置於三合局/三會局之後）
+        # 建議使用一組未被其他 section 使用的配色（紫色系）
+        YANGREN_COLOR = "#5A2A82"
+
+        st.markdown(f"<h3 style='color:{YANGREN_COLOR}'>羊刃</h3>", unsafe_allow_html=True)
+        yangren_res = find_yangren(bazi)  # 你先前新增的函式
+
+        st.markdown(
+            f"<span style='color:{YANGREN_COLOR}'>- 日干：{yangren_res['日干']}</span>",
+            unsafe_allow_html=True
+        )
+        st.markdown(
+            f"<span style='color:{YANGREN_COLOR}'>- 羊刃地支：{yangren_res['羊刃地支']}</span>",
+            unsafe_allow_html=True
+        )
+
+        hits = yangren_res.get("命盤羊刃落點", [])
+        if hits:
+            for h in hits:
+                # 若羊刃落在月柱，特別標示「羊刃格成立」
+                if h["柱"] == "月柱":
+                    st.markdown(
+                        f"<span style='color:{YANGREN_COLOR}'>- 命中：{h['柱']}（{h['地支']}）"
+                        f" <b style='color:{YANGREN_COLOR}'>【羊刃格成立】</b></span>",
+                        unsafe_allow_html=True
+                    )
+                else:
+                    st.markdown(
+                        f"<span style='color:{YANGREN_COLOR}'>- 命中：{h['柱']}（{h['地支']}）</span>",
+                        unsafe_allow_html=True
+                    )
+        else:
+            st.markdown(
+                f"<span style='color:{YANGREN_COLOR}'>無羊刃落於四柱地支</span>",
+                unsafe_allow_html=True
+            )        
+        
         # 🟠 Section 3: 貴人
         for title, func in [
             ("天乙貴人", count_tian_yi_gui_ren),
