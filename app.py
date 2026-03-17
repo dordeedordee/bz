@@ -514,20 +514,28 @@ yangren_map = {
 
 
 def get_bazi(year: int, month: int, day: int, hour: int):
-    day_data = sxtwl.fromSolar(year, month, day)  # 轉換為農曆對象
+    # Minimal Correction: Handle the "Late Zi" hour (23:00-00:00) 
+    # In Bazi, the day pillar changes at 23:00, not 00:00.
+    day_data = sxtwl.fromSolar(year, month, day)
+    
+    if hour >= 23:
+        # Get the next day's data for the Day Pillar calculation
+        effective_day_data = day_data.after(1)
+    else:
+        effective_day_data = day_data
 
-    # 年柱（立春為界）
+    # 年柱（立春為界 - sxtwl handles this internally in getYearGZ）
     yTG = day_data.getYearGZ()
     year_gan = tian_gan[yTG.tg]
     year_zhi = di_zhi[yTG.dz]
 
-    # 月柱（節氣月）
+    # 月柱（節氣月 - sxtwl handles solar term boundaries in getMonthGZ）
     mTG = day_data.getMonthGZ()
     month_gan = tian_gan[mTG.tg]
     month_zhi = di_zhi[mTG.dz]
 
-    # 日柱
-    dTG = day_data.getDayGZ()
+    # 日柱 (Corrected to use effective_day_data for 23:00+ births)
+    dTG = effective_day_data.getDayGZ()
     day_gan = tian_gan[dTG.tg]
     day_zhi = di_zhi[dTG.dz]
 
@@ -545,14 +553,13 @@ def get_bazi(year: int, month: int, day: int, hour: int):
     }
 
     def fmt_canggan(zhi: str) -> str:
-        """將地支藏干格式化為字串，例如：己癸辛"""
         return "".join(cang_gan_map.get(zhi, []))
 
     print("\n")
     print(f"公曆出生日期: {bazi['公曆']}")
     print("時 日 月 年")
 
-    # 天干十神（以日干為主）
+    # 天干十神
     print(
         f"{shishen_table[day_gan][bazi['時柱'][0]]} 元 "
         f"{shishen_table[day_gan][bazi['月柱'][0]]} "
@@ -573,7 +580,7 @@ def get_bazi(year: int, month: int, day: int, hour: int):
         f"{dizhi_shishen_table[day_gan][bazi['年柱'][1]]}"
     )
 
-    # 藏干（位於地支十神之下）
+    # 藏干
     print(
         f"{fmt_canggan(bazi['時柱'][1])} "
         f"{fmt_canggan(bazi['日柱'][1])} "
