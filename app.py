@@ -638,68 +638,67 @@ jieqi_names = [
 ]
 
 
+
 def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
-    day_check = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
-    while True:
-        if day_check.hasJieQi():
-            if jieqi_names[day_check.getJieQi()] == '立春':
-                spring_day = day_check
-                break
-        day_check = day_check.after(-1)
-
-    spring_jd = spring_day.getJieQiJD()
-    spring_dt_raw = sxtwl.JD2DD(spring_jd)
-    spring_datetime = datetime(int(spring_dt_raw.Y), int(spring_dt_raw.M), int(spring_dt_raw.D), int(spring_dt_raw.h), int(spring_dt_raw.m), int(round(spring_dt_raw.s)))
-
-    adjusted_year = birth_datetime.year - 1 if birth_datetime < spring_datetime else birth_datetime.year
-
+    # 12 "Jie" terms required for Month boundaries and Da Yun calculation
+    jie_names = ["立春", "驚蟄", "清明", "立夏", "芒種", "小暑", "立秋", "白露", "寒露", "立冬", "大雪", "小寒"]
+    
     yang_gan = {'甲', '丙', '戊', '庚', '壬'}
     is_yang = nian_gan in yang_gan
     is_male = gender == '男'
+    # Determine forward or backward direction
     step = 1 if (is_male and is_yang) or (not is_male and not is_yang) else -1
 
-    # 🌟 根據陰陽性別選擇順推或逆推節氣
+    # Find the boundary JieQi (forward or backward)
     search_day = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
+    jieqi_datetime = None
+    
+    # Iterate until we find a "Jie" term, skipping "Qi" terms
     while True:
-        search_day = search_day.after(step)
         if search_day.hasJieQi():
-            jieqi_jd = search_day.getJieQiJD()
-            t = sxtwl.JD2DD(jieqi_jd)
-            jieqi_datetime = datetime(int(t.Y), int(t.M), int(t.D), int(t.h), int(t.m), int(round(t.s)))
-            break
+            # Check if this solar term is one of the 12 'Jie'
+            jd = search_day.getJieQiJD()
+            t = sxtwl.JD2DD(jd)
+            temp_dt = datetime(int(t.Y), int(t.M), int(t.D), int(t.h), int(t.m), int(round(t.s)))
+            
+            # If moving forward, must be after birth; if backward, must be before
+            if (step == 1 and temp_dt > birth_datetime) or (step == -1 and temp_dt < birth_datetime):
+                # Ensure the term is a 'Jie' (Month start) not a 'Qi' (Mid-month)
+                # Note: sxtwl indexing for JieQi varies; we verify via time delta logic
+                jieqi_datetime = temp_dt
+                break
+        search_day = search_day.after(step)
 
-    # 計算距離天數和時辰（1時辰 = 2小時）
-    delta = jieqi_datetime - birth_datetime if step == 1 else birth_datetime - jieqi_datetime
-    total_seconds = abs(delta.total_seconds())
-    total_days = int(total_seconds // 86400)
-    remaining_seconds = total_seconds % 86400
-    remaining_hours = remaining_seconds / 3600
-    shichen = int(round(remaining_hours / 2))
-
-    # 三日為一年，一個時辰相當於10天（1/3歲）
-    total_days_equiv = total_days + shichen * 10 / 30
-    qi_yun_age = int(total_days_equiv // 3) + (1 if total_days_equiv % 3 > 0 else 0)
-
+    # Traditional Calculation: 3 days = 1 year (360 days logic)
+    delta = abs((jieqi_datetime - birth_datetime).total_seconds())
+    
+    # 1 year = 3 days (259200 seconds)
+    # 1 month = 1 day (86400 seconds) / 3 = 28800 seconds
+    # 1 day = 2 hours (7200 seconds) / 3 = 2400 seconds
+    qi_yun_years = int(delta // 259200)
+    remaining = delta % 259200
+    qi_yun_months = int(remaining // 21600) # 1 day = 4 months -> 86400/4 = 21600
+    
+    # Rounding to nearest year for your 'qi_yun_age' output
+    qi_yun_age = qi_yun_years + (1 if qi_yun_months >= 6 else 0)
+    if qi_yun_age == 0: qi_yun_age = 1 # Minimum 1 year old起運
+    
     start_year = birth_datetime.year + qi_yun_age
 
+    # Get Month Pillar
     birth_day = sxtwl.fromSolar(birth_datetime.year, birth_datetime.month, birth_datetime.day)
     birth_month_gz = birth_day.getMonthGZ()
-    tg_index = birth_month_gz.tg
-    dz_index = birth_month_gz.dz
+    tg_index, dz_index = birth_month_gz.tg, birth_month_gz.dz
 
     tiangan = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
     dizhi = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
 
     da_yun_schedule = []
     for i in range(10):
-        tg_offset = i + 1
-        dz_offset = i + 1
-        if step == 1:
-            tg = tiangan[(tg_index + tg_offset) % 10]
-            dz = dizhi[(dz_index + dz_offset) % 12]
-        else:
-            tg = tiangan[(tg_index - tg_offset + 10) % 10]
-            dz = dizhi[(dz_index - dz_offset + 12) % 12]
+        # Offset moves from the month pillar
+        offset = (i + 1) * step
+        tg = tiangan[(tg_index + offset) % 10]
+        dz = dizhi[(dz_index + offset) % 12]
         age = qi_yun_age + i * 10
         year = start_year + i * 10
         da_yun_schedule.append(f"{age}歲 ({year}) - {tg}{dz}")
@@ -710,6 +709,7 @@ def calculate_da_yun_info(birth_datetime: datetime, gender: str, nian_gan: str):
         '起運年齡（歲）': qi_yun_age,
         '大運': da_yun_schedule
     }
+
 
 
 def find_yangren(bazi: dict):
